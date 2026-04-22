@@ -521,7 +521,7 @@ export default function AdminView() {
     ? 'Continuer avec le compte admin propriétaire'
     : 'Revendiquer l’admin avec Google';
   const chapters = currentSubject?.chapters || [];
-  const allItems = currentSubject ? listAdminItems(currentSubject, contentType, mentionVariant) : [];
+  const allItems = currentSubject ? listAdminItems(currentSubject, contentType, mentionVariant, { includeEmpty: true }) : [];
   const selectedChapter = chapters.find((chapter) => String(chapter.number) === String(selectedChapterNumber)) || chapters[0] || null;
   const chapterItems = allItems.filter((item) => Number(item.chapterNumber) === Number(selectedChapter?.number));
   const selectedItem = chapterItems.find((item) => item.id === selectedItemId) || chapterItems[0] || null;

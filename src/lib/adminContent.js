@@ -1071,8 +1071,9 @@ function hasQuizAdminItemContent(item) {
   );
 }
 
-export function listAdminItems(subject, contentType, mentionVariant = 'mention_bien') {
+export function listAdminItems(subject, contentType, mentionVariant = 'mention_bien', options = {}) {
   if (!subject) return [];
+  const includeEmpty = Boolean(options?.includeEmpty);
 
   if (contentType === 'parcours') {
     return collectChapterItems(subject, (chapter) => {
@@ -1099,7 +1100,7 @@ export function listAdminItems(subject, contentType, mentionVariant = 'mention_b
       hasEnonce: Boolean(item.enonce),
       hasBrouillon: Boolean(item.traitement?.questions?.some((question) => question.brouillon?.steps?.length)),
       hasTraitement: Boolean(item.traitement?.questions?.length),
-    })).filter((item) => hasCompositeAdminItemContent(item.data)));
+    })).filter((item) => includeEmpty || hasCompositeAdminItemContent(item.data)));
   }
 
   if (contentType === 'exercice') {
@@ -1114,7 +1115,7 @@ export function listAdminItems(subject, contentType, mentionVariant = 'mention_b
         hasEnonce: Boolean(item.enonce),
         hasBrouillon: Boolean(item.traitement?.questions?.some((question) => question.brouillon?.steps?.length)),
         hasTraitement: Boolean(item.traitement?.questions?.length),
-      })).filter((item) => hasCompositeAdminItemContent(item.data)));
+      })).filter((item) => includeEmpty || hasCompositeAdminItemContent(item.data)));
   }
 
   if (contentType === 'quiz') {
@@ -1129,7 +1130,7 @@ export function listAdminItems(subject, contentType, mentionVariant = 'mention_b
       hasTrap: Boolean(item.modeQuestions?.trap?.length),
       hasDuelIntrus: Boolean(item.modeQuestions?.duel_intrus?.length),
       hasDeminage: Boolean(item.modeQuestions?.deminage?.length),
-    })).filter((item) => hasQuizAdminItemContent(item.data)));
+    })).filter((item) => includeEmpty || hasQuizAdminItemContent(item.data)));
   }
 
   return [];
