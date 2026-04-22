@@ -1,0 +1,5 @@
+Dans l etape 1 dans un chapitre, "etape 1 choisir le type", c est pas tres bon visuellement a regarder. Refais bien ce design de la premiere etape pour etre un peu plus beau que ca et plus compact, cool a regarder. On a deja corrige ca mais ce n est pas encore tres bien, c est meme devenu pire qu avant notre precedente correction. C est bien sur mobile mais sur pc c est comem ca.
+
+A part ca, dans la page traitement des exerices et sujet types, fais vraiment que si on tape sur une suggestion de bloc dans le clavier, et que la zone de reponse est trop bas, je veux que la zone de reponse ou notre point de vue, se met sur la zone de reponse et celle aura l air de monter sans qu on aie besoin de scroller. En fait, on va appeller ca un systeme de reactivite qui fait que sur mobile ou sur n importe quel appareil, la zone de reponse soit toujours parfaitement visible et ne sera jamais cache par le clavier ou par la barre du haut.
+
+je te donnerai encore ici d autres instructions et pour que tu puisse continuer sans t arreter.

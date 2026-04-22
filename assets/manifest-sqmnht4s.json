@@ -1,0 +1,21 @@
+{
+  "name": "BacBooster",
+  "short_name": "BacBooster",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f7f7f7",
+  "theme_color": "#58cc02",
+  "description": "Révise ton Bac comme un jeu.",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluency/192/student-male.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://img.icons8.com/fluency/512/student-male.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
