@@ -68,7 +68,7 @@ function getSubjectContentSummary(subject) {
 }
 
 export default function HomePage({ tab }) {
-  const { data, navigate, playClick, setCurrentSubjectId } = useApp();
+  const { data, navigate, playClick, setCurrentSubjectId, isStudentGoogleSignedIn } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState(tab === 'subjects' ? 'subjects' : 'home');
 
@@ -76,6 +76,7 @@ export default function HomePage({ tab }) {
   const subjects = data?.subjects || [];
   const level = Math.floor((user.xp || 0) / 500) + 1;
   const xpInLevel = (user.xp || 0) % 500;
+  const lockedSubjects = !isStudentGoogleSignedIn;
 
   const filteredSubjects = useMemo(() => {
     if (!search) return subjects;
@@ -105,38 +106,54 @@ export default function HomePage({ tab }) {
         </header>
 
         <main className="flex-1 px-4 py-4 pb-28 space-y-3">
-          {filteredSubjects.map((subject, idx) => {
-            const Icon = ICON_MAP[subject.icon] || BookOpen;
-            const chapCount = getVisibleChapters(subject).length;
-            const contentSummary = getSubjectContentSummary(subject);
-            return (
+          {lockedSubjects ? (
+            <div className="rounded-3xl border border-primary/15 bg-white p-5 shadow-card text-center animate-fade-in">
+              <GraduationCap size={36} className="text-primary mx-auto mb-3" />
+              <h3 className="text-base font-extrabold text-primary-dark">Connexion Google requise</h3>
+              <p className="text-sm text-txt-sub mt-2">Les matières et contenus restent verrouillés tant qu’aucun compte Google élève n’est connecté.</p>
               <button
-                key={subject.id}
-                onClick={() => {
-                  playClick();
-                  setCurrentSubjectId(subject.id);
-                  navigate('chapter', { subjectId: subject.id });
-                }}
-                className="w-full flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-gray-100 shadow-card active:shadow-card-hover active:scale-[0.98] transition-all animate-fade-in-up"
-                style={{ animationDelay: `${idx * 40}ms` }}
+                onClick={() => { playClick(); navigate('profile'); }}
+                className="mt-4 inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-extrabold text-white shadow-gold active:scale-95 transition-transform"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-bouncy" style={{ backgroundColor: subject.color + '18' }}>
-                  <Icon size={24} style={{ color: subject.color }} />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="font-bold text-sm">{subject.name}</h3>
-                  <p className="text-[11px] text-txt-sub">{chapCount} chapitre{chapCount !== 1 ? 's' : ''} · {contentSummary}</p>
-                </div>
-                <ChevronRight size={18} className="text-txt-muted" />
+                Ouvrir le profil et se connecter
               </button>
-            );
-          })}
-
-          {filteredSubjects.length === 0 && (
-            <div className="text-center py-16 animate-fade-in">
-              <BookOpen size={48} className="text-primary/20 mx-auto mb-3" />
-              <p className="text-txt-sub font-semibold text-sm">Aucune matière trouvée</p>
             </div>
+          ) : (
+            <>
+              {filteredSubjects.map((subject, idx) => {
+                const Icon = ICON_MAP[subject.icon] || BookOpen;
+                const chapCount = getVisibleChapters(subject).length;
+                const contentSummary = getSubjectContentSummary(subject);
+                return (
+                  <button
+                    key={subject.id}
+                    onClick={() => {
+                      playClick();
+                      setCurrentSubjectId(subject.id);
+                      navigate('chapter', { subjectId: subject.id });
+                    }}
+                    className="w-full flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-gray-100 shadow-card active:shadow-card-hover active:scale-[0.98] transition-all animate-fade-in-up"
+                    style={{ animationDelay: `${idx * 40}ms` }}
+                  >
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-bouncy" style={{ backgroundColor: subject.color + '18' }}>
+                      <Icon size={24} style={{ color: subject.color }} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-bold text-sm">{subject.name}</h3>
+                      <p className="text-[11px] text-txt-sub">{chapCount} chapitre{chapCount !== 1 ? 's' : ''} · {contentSummary}</p>
+                    </div>
+                    <ChevronRight size={18} className="text-txt-muted" />
+                  </button>
+                );
+              })}
+
+              {filteredSubjects.length === 0 && (
+                <div className="text-center py-16 animate-fade-in">
+                  <BookOpen size={48} className="text-primary/20 mx-auto mb-3" />
+                  <p className="text-txt-sub font-semibold text-sm">Aucune matière trouvée</p>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
@@ -178,12 +195,12 @@ export default function HomePage({ tab }) {
         {/* Quick actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => { playClick(); setActiveTab('subjects'); }}
+            onClick={() => { playClick(); if (lockedSubjects) navigate('profile'); else setActiveTab('subjects'); }}
             className="p-4 rounded-2xl bg-white shadow-card active:shadow-card-hover active:scale-[0.97] transition-all"
           >
             <BookOpen size={24} className="text-accent-blue mb-2" />
-            <p className="font-bold text-sm">Matières</p>
-            <p className="text-[11px] text-txt-sub">{subjects.length} disponibles</p>
+            <p className="font-bold text-sm">{lockedSubjects ? 'Connexion Google' : 'Matières'}</p>
+            <p className="text-[11px] text-txt-sub">{lockedSubjects ? 'Déverrouiller les contenus' : `${subjects.length} disponibles`}</p>
           </button>
           <button
             onClick={() => { playClick(); navigate('profile'); }}
@@ -226,23 +243,30 @@ export default function HomePage({ tab }) {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-sm">Tes matières</h3>
-            <button onClick={() => setActiveTab('subjects')} className="text-xs font-semibold text-primary">Tout voir</button>
+            <button onClick={() => { if (lockedSubjects) navigate('profile'); else setActiveTab('subjects'); }} className="text-xs font-semibold text-primary">{lockedSubjects ? 'Se connecter' : 'Tout voir'}</button>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            {subjects.slice(0, 8).map(s => {
-              const Icon = ICON_MAP[s.icon] || BookOpen;
-              return (
-                <button key={s.id}
-                  onClick={() => { playClick(); setCurrentSubjectId(s.id); navigate('chapter', { subjectId: s.id }); }}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white shadow-card active:scale-95 transition-transform">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.color + '18' }}>
-                    <Icon size={20} style={{ color: s.color }} />
-                  </div>
-                  <span className="text-[10px] font-semibold text-center leading-tight truncate w-full">{s.name}</span>
-                </button>
-              );
-            })}
-          </div>
+          {lockedSubjects ? (
+            <div className="rounded-2xl border border-dashed border-primary/20 bg-white px-4 py-5 text-center">
+              <p className="text-sm font-bold text-primary-dark">Contenus verrouillés</p>
+              <p className="text-[11px] text-txt-sub mt-1">Connecte ton compte Google dans le profil pour afficher les matières, contenus et scores propriétaires.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2">
+              {subjects.slice(0, 8).map(s => {
+                const Icon = ICON_MAP[s.icon] || BookOpen;
+                return (
+                  <button key={s.id}
+                    onClick={() => { playClick(); setCurrentSubjectId(s.id); navigate('chapter', { subjectId: s.id }); }}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white shadow-card active:scale-95 transition-transform">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.color + '18' }}>
+                      <Icon size={20} style={{ color: s.color }} />
+                    </div>
+                    <span className="text-[10px] font-semibold text-center leading-tight truncate w-full">{s.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>

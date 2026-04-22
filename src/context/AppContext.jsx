@@ -1835,18 +1835,29 @@ export function AppProvider({ children }) {
     return resolvedClass;
   }, [data, save]);
 
-  const navigate = useCallback((v, params = {}) => {
-    if (data?.settings?.uiSoundEnabled !== false) SoundEngine.playClick('softClick');
-    setView(v);
-    setViewParams(params);
-    window.scrollTo(0, 0);
-  }, [data?.settings?.uiSoundEnabled]);
+  const isStudentGoogleSignedIn = Boolean(
+    cloudState?.sessionUser?.id && normalizeAdminState(data?.admin).sessionScope === 'user'
+  );
 
   const showToast = useCallback((message, type = 'info') => {
     if (toastTimeoutRef.current) window.clearTimeout(toastTimeoutRef.current);
     setToast({ message, type });
     toastTimeoutRef.current = window.setTimeout(() => setToast(null), 2500);
   }, []);
+
+  const navigate = useCallback((v, params = {}) => {
+    if (data?.settings?.uiSoundEnabled !== false) SoundEngine.playClick('softClick');
+    if (['subjects', 'chapter', 'quiz', 'exercise-flow'].includes(v) && !isStudentGoogleSignedIn) {
+      setView('profile');
+      setViewParams({});
+      showToast('Connecte-toi avec Google pour accéder aux contenus', 'info');
+      window.scrollTo(0, 0);
+      return;
+    }
+    setView(v);
+    setViewParams(params);
+    window.scrollTo(0, 0);
+  }, [data?.settings?.uiSoundEnabled, isStudentGoogleSignedIn, showToast]);
 
   const pushFloatingFx = useCallback((entries) => {
     const nextEntries = (Array.isArray(entries) ? entries : [entries])
@@ -2557,12 +2568,18 @@ export function AppProvider({ children }) {
   }, [data, pushFloatingFx, save, showToast]);
 
   const startQuiz = useCallback((questions, title, mode = 'standard', enonce, meta = {}) => {
+    if (!isStudentGoogleSignedIn) {
+      showToast('Connecte-toi avec Google pour accéder aux contenus', 'info');
+      navigate('profile');
+      return false;
+    }
     const nextQuestions = meta.shuffleQuestions === false
       ? [...questions]
       : [...questions].sort(() => Math.random() - 0.5);
     setQuizState({ questions: nextQuestions, title, mode, enonce, ...meta });
     navigate('quiz');
-  }, [navigate]);
+    return true;
+  }, [isStudentGoogleSignedIn, navigate, showToast]);
 
   const profiles = (data?.profileOrder || []).map((profileId, index) => {
     const profile = data?.profiles?.[profileId];
@@ -2622,6 +2639,7 @@ export function AppProvider({ children }) {
     persistenceProfile,
     adminStatus,
     cloudStatus: cloudState,
+    isStudentGoogleSignedIn,
     studentIdentity: data?.user?.studentIdentity || null,
     syncSettings: data?.settings?.sync || null,
     changeSelectedClass,
