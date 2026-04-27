@@ -3,8 +3,14 @@ import { useApp } from '../context/AppContext';
 import { hasPlayableCompositeContent, hasPlayableQuizContent } from '../lib/contentVisibility';
 import {
   Calculator, Atom, Leaf, BookOpen, Globe, Map, Flag, Dumbbell,
-  ChevronRight, Search, GraduationCap, TrendingUp, Trophy, Zap, Star
+  ChevronRight, Search, GraduationCap, TrendingUp, Trophy, Zap, Star, Lock
 } from 'lucide-react';
+
+function isSubjectBlocked(blockedIds, subject) {
+  if (!Array.isArray(blockedIds) || !blockedIds.length) return false;
+  const id = String(subject?.id || '');
+  return blockedIds.includes(id) || blockedIds.includes(`id:${id}`);
+}
 
 const ICON_MAP = {
   calculator: Calculator, atom: Atom, leaf: Leaf, 'book-open': BookOpen,
@@ -124,6 +130,27 @@ export default function HomePage({ tab }) {
                 const Icon = ICON_MAP[subject.icon] || BookOpen;
                 const chapCount = getVisibleChapters(subject).length;
                 const contentSummary = getSubjectContentSummary(subject);
+                const blocked = isSubjectBlocked(user.blockedSubjectIds, subject);
+                if (blocked) {
+                  return (
+                    <div
+                      key={subject.id}
+                      aria-disabled="true"
+                      title="Matière bloquée par l’administrateur"
+                      className="w-full flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-gray-100 shadow-card animate-fade-in-up cursor-not-allowed select-none"
+                      style={{ animationDelay: `${idx * 40}ms` }}
+                    >
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-bouncy blur-[2px]" style={{ backgroundColor: subject.color + '18' }}>
+                        <Icon size={24} style={{ color: subject.color }} />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h3 className="font-bold text-sm blur-[5px] select-none">{subject.name}</h3>
+                        <p className="text-[11px] text-txt-sub mt-1 flex items-center gap-1"><Lock size={11} className="text-accent-red" /> Matière bloquée par l’admin</p>
+                      </div>
+                      <Lock size={18} className="text-accent-red" />
+                    </div>
+                  );
+                }
                 return (
                   <button
                     key={subject.id}
@@ -254,6 +281,20 @@ export default function HomePage({ tab }) {
             <div className="grid grid-cols-4 gap-2">
               {subjects.slice(0, 8).map(s => {
                 const Icon = ICON_MAP[s.icon] || BookOpen;
+                const blocked = isSubjectBlocked(user.blockedSubjectIds, s);
+                if (blocked) {
+                  return (
+                    <div key={s.id}
+                      aria-disabled="true"
+                      title="Matière bloquée par l’administrateur"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white shadow-card cursor-not-allowed select-none">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center blur-[2px]" style={{ backgroundColor: s.color + '18' }}>
+                        <Icon size={20} style={{ color: s.color }} />
+                      </div>
+                      <span className="text-[10px] font-semibold text-center leading-tight truncate w-full blur-[4px]">{s.name}</span>
+                    </div>
+                  );
+                }
                 return (
                   <button key={s.id}
                     onClick={() => { playClick(); setCurrentSubjectId(s.id); navigate('chapter', { subjectId: s.id }); }}

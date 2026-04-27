@@ -95,6 +95,7 @@ export const DEFAULT_USER = {
   xpGoal: 1000,
   streak: 0,
   stars: 0,
+  blockedSubjectIds: [],
   credits: 30,
   globalScore: 0,
   averageScore: 0,

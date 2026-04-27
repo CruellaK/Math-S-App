@@ -1,3 +1,5 @@
+import { MASSIVE_LANGUAGE_DOWNLOADABLE_EXAMPLES } from './languageContentCatalog';
+
 const quizSuggestionFile = {
   label: 'JSON complet — Suggestion',
   filename: 'exemple_quiz_mode_suggestion_complet.json',
@@ -676,5 +678,6 @@ export const ADMIN_DOWNLOADABLE_EXAMPLES = [
     title: 'Sujet type complet — 3 fichiers séparés',
     description: 'Un sujet type complet avec Énoncé, Brouillon et Traitement séparés.',
     files: [sujetTypeEnonceFile, sujetTypeBrouillonFile, sujetTypeTraitementFile]
-  }
+  },
+  ...MASSIVE_LANGUAGE_DOWNLOADABLE_EXAMPLES
 ];

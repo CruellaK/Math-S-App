@@ -158,6 +158,11 @@ export function sanitizeSyncSettings(sync = {}) {
 export function sanitizeUserData(user = {}, settings = {}) {
   const stats = user.stats || {};
   const inventory = user.inventory || {};
+  const blockedSubjectIds = [...new Set(
+    (Array.isArray(user.blockedSubjectIds) ? user.blockedSubjectIds : [])
+      .map((subjectId) => String(subjectId || '').trim())
+      .filter(Boolean)
+  )];
   const safeAverageScore = clampRange(user.averageScore ?? (user.globalScore ? Number(user.globalScore) / 5 : 0), 0, 20);
   const safeFire = clampFloor(user.fire ?? user.streak);
   const caps = normalizeScoreCaps(settings?.scoreCaps);
@@ -199,6 +204,7 @@ export function sanitizeUserData(user = {}, settings = {}) {
     fire: safeFire,
     history: Array.isArray(user.history) ? user.history : [],
     badges: Array.isArray(user.badges) ? user.badges : [],
+    blockedSubjectIds,
     selectedClass: user.selectedClass || 'Terminale',
     profileName: user.profileName || 'Élève BacBooster',
     avatar: user.avatar || '',

@@ -250,6 +250,39 @@ export default function ChapterView() {
   const subject = (data?.subjects || []).find(s => String(s.id) === String(subjectId)) || { name: 'Matière', chapters: [], color: '#f5b83d' };
   const chapters = getVisibleChapters(subject);
   const Icon = ICON_MAP[subject.icon] || BookOpen;
+  const blockedIds = Array.isArray(data?.user?.blockedSubjectIds) ? data.user.blockedSubjectIds : [];
+  const subjectBlocked = blockedIds.includes(String(subject?.id || '')) || blockedIds.includes(`id:${String(subject?.id || '')}`);
+
+  if (subjectBlocked) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col">
+        <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-xl border-b border-primary/10 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button onClick={() => { playClick(); navigate('subjects'); }} className="text-txt-sub active:scale-90 transition-transform">
+              <ArrowLeft size={22} />
+            </button>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-bouncy blur-[2px]" style={{ backgroundColor: subject.color + '18' }}>
+              <Icon size={22} style={{ color: subject.color }} />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-bold text-sm blur-[5px] select-none">{subject.name}</h2>
+              <p className="text-[11px] text-accent-red font-semibold">Matière bloquée par l’admin</p>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 px-4 py-10 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-accent-red/10 flex items-center justify-center mb-4">
+            <BookOpen size={28} className="text-accent-red" />
+          </div>
+          <h3 className="font-extrabold text-base">Accès restreint</h3>
+          <p className="text-xs text-txt-sub mt-2 max-w-sm">Cette matière a été bloquée pour ton profil par l’administrateur. Contacte-le pour la débloquer.</p>
+          <button onClick={() => { playClick(); navigate('subjects'); }} className="mt-5 px-4 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-gold active:scale-95 transition-transform">
+            Revenir aux matières
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   const handleOpenQuiz = (chapter, quizEntry, chapterIndex) => {
     if (!countItemQuestions(quizEntry)) return;

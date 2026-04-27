@@ -1,4 +1,5 @@
 import { CLASSES, SUBJECTS } from './constants';
+import { LANGUAGE_PROMPT_BANK_EXTENSIONS, MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES } from './languageContentCatalog';
 
 function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -1740,6 +1741,7 @@ export const EXAMPLE_IMPORT_FILES = [
       ],
     },
   },
+  ...MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES,
 ];
 
 export const PROMPT_BANK = [
@@ -2182,4 +2184,5 @@ Contraintes :
 - Le format Bien ne doit pas contenir ces deux champs.
 - Les deux formats doivent rester compatibles avec une validation de schéma avant import.`
   },
+  ...LANGUAGE_PROMPT_BANK_EXTENSIONS,
 ];

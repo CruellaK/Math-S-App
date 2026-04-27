@@ -457,6 +457,7 @@ export default function AdminView() {
     showToast,
     updateProfile,
     availableClasses,
+    profiles,
     activeProfileId,
     adminStatus,
     signInAdminWithGoogle,
@@ -478,6 +479,7 @@ export default function AdminView() {
   const [pastedImportSlotId, setPastedImportSlotId] = useState('');
   const [pastedJsonText, setPastedJsonText] = useState('');
   const [validationErrors, setValidationErrors] = useState([]);
+  const [selectedModeratedProfileId, setSelectedModeratedProfileId] = useState(String(activeProfileId || ''));
   const [moderationName, setModerationName] = useState(data?.user?.profileName || '');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [adminActionLoading, setAdminActionLoading] = useState(false);
@@ -506,6 +508,25 @@ export default function AdminView() {
   const adminClasses = availableClasses?.length ? availableClasses : CLASSES;
   const classSubjects = data?.classContent?.[selectedClass] || [];
   const currentSubject = classSubjects.find(subject => String(subject.id) === String(selectedSubjectId)) || classSubjects[0] || null;
+  const localProfileIds = (data?.profileOrder || []).map((profileId) => String(profileId));
+  const localProfileRecords = (profiles || []).map((profile) => ({
+    id: String(profile.id),
+    name: profile.name || 'Eleve',
+    avatar: profile.avatar || '',
+    selectedClass: profile.selectedClass || CLASSES[0],
+  }));
+  const selectedModeratedProfile = data?.profiles?.[selectedModeratedProfileId] || data?.profiles?.[activeProfileId] || null;
+  const selectedModeratedUser = selectedModeratedProfile?.user || {};
+  const moderatedProfileClassName = normalizeClassName(
+    selectedModeratedUser?.selectedClass || selectedModeratedProfile?.settings?.selectedClass || CLASSES[0],
+    CLASSES[0]
+  );
+  const moderatedProfileSubjects = selectedModeratedProfile?.classContent?.[moderatedProfileClassName]
+    || selectedModeratedProfile?.subjects
+    || [];
+  const moderatedBlockedSubjectIds = Array.isArray(selectedModeratedUser?.blockedSubjectIds)
+    ? selectedModeratedUser.blockedSubjectIds.map((value) => String(value))
+    : [];
   const adminSessionUser = adminStatus?.sessionUser || null;
   const isAdminConnected = Boolean(adminStatus?.isAdminSessionActive);
   const isUserSessionActive = Boolean(adminStatus?.isUserSessionActive);
@@ -587,8 +608,15 @@ export default function AdminView() {
   }, [importSlots, pastedImportSlotId]);
 
   useEffect(() => {
-    setModerationName(data?.user?.profileName || '');
-  }, [data?.user?.profileName]);
+    if (!localProfileIds.length) return;
+    const currentId = String(selectedModeratedProfileId || '');
+    if (currentId && localProfileIds.includes(currentId)) return;
+    setSelectedModeratedProfileId(String(activeProfileId || localProfileIds[0]));
+  }, [activeProfileId, localProfileIds, selectedModeratedProfileId]);
+
+  useEffect(() => {
+    setModerationName(selectedModeratedUser?.profileName || '');
+  }, [selectedModeratedProfileId, selectedModeratedUser?.profileName]);
 
   useEffect(() => {
     const fallbackTiming = createDefaultTimingDefaults();
@@ -664,6 +692,28 @@ export default function AdminView() {
       exerciceScolaires: nextActiveProfile?.exerciceScolaires || data?.exerciceScolaires,
       exerciceGlobaux: nextActiveProfile?.exerciceGlobaux || data?.exerciceGlobaux,
     };
+  };
+
+  const persistModeratedProfileUserPatch = async (partialUser, successMessage = '') => {
+    if (!selectedModeratedProfileId) return;
+
+    const nextData = buildSharedContentState((profile, profileId) => {
+      if (String(profileId) !== String(selectedModeratedProfileId)) return profile;
+      return {
+        ...profile,
+        user: {
+          ...(profile?.user || {}),
+          ...(partialUser || {}),
+          studentIdentity: {
+            ...(profile?.user?.studentIdentity || {}),
+            ...(partialUser?.studentIdentity || {}),
+          },
+        },
+      };
+    });
+
+    await save(nextData);
+    if (successMessage) showToast(successMessage, 'success');
   };
 
   const persistBucketForClass = async (nextBucket, successMessage, nextSelectedId = null) => {
@@ -1296,8 +1346,13 @@ export default function AdminView() {
 
   const handleSaveModerationName = async () => {
     if (!moderationName.trim()) return;
-    await updateProfile({ profileName: moderationName.trim() });
-    showToast('Nom élève modéré', 'success');
+    await persistModeratedProfileUserPatch({
+      profileName: moderationName.trim(),
+      studentIdentity: {
+        ...(selectedModeratedUser?.studentIdentity || {}),
+        displayName: moderationName.trim(),
+      },
+    }, 'Nom eleve modere');
   };
 
   const handleCreateSubject = async () => {
@@ -1392,14 +1447,30 @@ export default function AdminView() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      await updateProfile({ avatar });
-      showToast('Avatar élève mis à jour', 'success');
+      await persistModeratedProfileUserPatch({
+        avatar,
+      }, 'Avatar eleve mis a jour');
     } catch (error) {
       showToast('Impossible de charger l’image', 'error');
     } finally {
       setIsUploadingAvatar(false);
       event.target.value = '';
     }
+  };
+
+  const handleToggleBlockedSubject = async (subject) => {
+    if (!subject?.id) return;
+    const subjectId = String(subject.id);
+    const nextBlocked = new Set(moderatedBlockedSubjectIds);
+    nextBlocked.delete(subjectId);
+    nextBlocked.delete(`id:${subjectId}`);
+
+    const isCurrentlyBlocked = moderatedBlockedSubjectIds.includes(subjectId) || moderatedBlockedSubjectIds.includes(`id:${subjectId}`);
+    if (!isCurrentlyBlocked) nextBlocked.add(subjectId);
+
+    await persistModeratedProfileUserPatch({
+      blockedSubjectIds: Array.from(nextBlocked),
+    }, isCurrentlyBlocked ? `${subject.name} debloquee pour ce profil` : `${subject.name} bloquee pour ce profil`);
   };
 
   /* ── Lock screen ── */
@@ -2348,19 +2419,46 @@ export default function AdminView() {
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <User size={16} className="text-accent-blue" /> Modération profil élève
               </h3>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-txt-sub">Profil eleve cible</label>
+                <select
+                  value={selectedModeratedProfileId}
+                  onChange={event => setSelectedModeratedProfileId(event.target.value)}
+                  disabled={!isAdminOwnerSession || localProfileRecords.length === 0}
+                  className="w-full rounded-xl border border-gray-200 bg-bg px-3 py-3 text-sm font-semibold focus:outline-none focus:border-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {localProfileRecords.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.name} - {profile.selectedClass}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-txt-sub">
+                  Seul l&apos;admin proprietaire peut moderer ce profil, bloquer ses matieres et changer son apparence.
+                </p>
+              </div>
               <div className="flex items-center gap-4">
-                <button onClick={() => avatarInputRef.current?.click()} className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light overflow-hidden text-white flex items-center justify-center shadow-gold active:scale-95 transition-transform">
-                  {data?.user?.avatar ? (
-                    <img src={data.user.avatar} alt="Avatar élève" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={!isAdminOwnerSession || !selectedModeratedProfile}
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light overflow-hidden text-white flex items-center justify-center shadow-gold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {selectedModeratedUser?.avatar ? (
+                    <img src={selectedModeratedUser.avatar} alt="Avatar eleve" className="w-full h-full object-cover" />
                   ) : (
                     <User size={28} className="text-white" />
                   )}
                 </button>
                 <div className="flex-1">
-                  <p className="font-bold text-sm">Avatar élève</p>
-                  <p className="text-[11px] text-txt-sub mt-1">{isUploadingAvatar ? 'Chargement…' : 'PNG / JPG acceptés. Accessible ici pour modération.'}</p>
-                  <button onClick={() => avatarInputRef.current?.click()} className="mt-2 px-3 py-2 rounded-xl bg-primary/10 text-primary-dark text-xs font-bold active:scale-95 transition-transform">
-                    <Upload size={14} className="inline mr-1" /> Modifier l’image
+                  <p className="font-bold text-sm">{selectedModeratedUser?.profileName || 'Profil eleve'}</p>
+                  <p className="text-[11px] text-txt-muted mt-1">Classe : {moderatedProfileClassName}</p>
+                  <p className="text-[11px] text-txt-sub mt-1">{isUploadingAvatar ? 'Chargement...' : 'PNG / JPG acceptes. Accessible ici pour moderation.'}</p>
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={!isAdminOwnerSession || !selectedModeratedProfile}
+                    className="mt-2 px-3 py-2 rounded-xl bg-primary/10 text-primary-dark text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Upload size={14} className="inline mr-1" /> Modifier l image
                   </button>
                 </div>
               </div>
@@ -2369,12 +2467,55 @@ export default function AdminView() {
                 <input
                   value={moderationName}
                   onChange={e => setModerationName(e.target.value)}
-                  placeholder="Nom affiché de l’élève"
-                  className="flex-1 p-3 rounded-xl bg-bg border border-gray-200 text-sm font-semibold focus:outline-none focus:border-primary/40"
+                  placeholder="Nom affiche de l eleve"
+                  disabled={!isAdminOwnerSession || !selectedModeratedProfile}
+                  className="flex-1 p-3 rounded-xl bg-bg border border-gray-200 text-sm font-semibold focus:outline-none focus:border-primary/40 disabled:opacity-40 disabled:cursor-not-allowed"
                 />
-                <button onClick={handleSaveModerationName} className="px-4 py-3 rounded-xl bg-primary text-white font-bold shadow-gold active:scale-95 transition-transform">
+                <button
+                  onClick={handleSaveModerationName}
+                  disabled={!isAdminOwnerSession || !selectedModeratedProfile}
+                  className="px-4 py-3 rounded-xl bg-primary text-white font-bold shadow-gold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   <Save size={16} />
                 </button>
+              </div>
+              <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-sm">Blocage des matieres</p>
+                    <p className="text-[11px] text-txt-sub mt-1">La matiere bloquee reste visible cote eleve avec un titre floute, mais son ouverture est interdite.</p>
+                  </div>
+                  <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary-dark text-[10px] font-bold">
+                    {moderatedBlockedSubjectIds.length} bloquee(s)
+                  </span>
+                </div>
+                {moderatedProfileSubjects.length === 0 ? (
+                  <p className="text-[11px] text-txt-sub">Aucune matiere disponible pour ce profil.</p>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {moderatedProfileSubjects.map((subject) => {
+                      const isBlocked = moderatedBlockedSubjectIds.includes(String(subject.id)) || moderatedBlockedSubjectIds.includes(`id:${String(subject.id)}`);
+                      return (
+                        <button
+                          key={`moderation-subject-${selectedModeratedProfileId}-${subject.id}`}
+                          onClick={() => handleToggleBlockedSubject(subject)}
+                          disabled={!isAdminOwnerSession}
+                          className={`rounded-xl border px-3 py-3 text-left transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed ${isBlocked ? 'border-accent-red/25 bg-accent-red/5 text-accent-red' : 'border-gray-200 bg-white text-primary-dark'}`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-sm">{subject.name}</span>
+                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${isBlocked ? 'bg-accent-red/10 text-accent-red' : 'bg-accent-green/10 text-accent-green'}`}>
+                              {isBlocked ? 'Bloquee' : 'Active'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] mt-1">
+                            {isBlocked ? 'Cliquer pour debloquer cette matiere pour ce profil.' : 'Cliquer pour bloquer cette matiere seulement pour ce profil.'}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
