@@ -211,7 +211,7 @@ function EnonceePage({ exerciseData, onContinue, onBack, playClick, onOpenTransl
    PAGE 2 — PRION (Brouillon / Étapes)
    ════════════════════════════════════ */
 function PrionPage({ exerciseData, onContinue, onBack, playClick, playSpecial, showToast, onOpenTranslation, questionTranslationPricing, optionTranslationPricing }) {
-  const questions = getPlayableCompositeQuestions(exerciseData);
+  const questions = useMemo(() => getPlayableCompositeQuestions(exerciseData), [exerciseData]);
 
   const questionsWithSteps = useMemo(() =>
     questions
