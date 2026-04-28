@@ -159,20 +159,26 @@ function buildDuelQuestions(cases = []) {
 
 function buildDeminageQuestions(cases = []) {
   return cases.map((entry) => {
-    const correctBlocks = splitBlocks(entry.correct);
-    const wrongSentence = entry.wrongs[0] || entry.correct;
-    const wrongBlocks = splitBlocks(wrongSentence);
+    const correctBlocks = splitBlocks(entry.correct).length >= 2
+      ? splitBlocks(entry.correct)
+      : ['Réponse', String(entry.answer || entry.correct || '').trim()].filter(Boolean);
+    const wrongSentence = entry.wrongs[0] || entry.duelTrap || entry.correct;
+    const wrongBlocks = splitBlocks(wrongSentence).length >= 2
+      ? splitBlocks(wrongSentence)
+      : ['Réponse', String(entry.duelTrap || entry.wrongs?.[0] || entry.answer || '').trim()].filter(Boolean);
     const wrongIndex = findDifferenceIndex(correctBlocks, wrongBlocks, entry.answer);
     const prefilledBlocks = correctBlocks.map((block, index) => {
       if (index !== wrongIndex) return block;
       return wrongBlocks[index] || entry.duelTrap;
     });
+    const safePrefilledBlocks = prefilledBlocks.length >= 2 ? prefilledBlocks : [...prefilledBlocks, entry.duelTrap || entry.answer || 'bloc'];
+    const safeCorrectBlocks = correctBlocks.length >= 2 ? correctBlocks : [...correctBlocks, entry.answer || 'réponse'];
 
     return {
       text: entry.deminagePrompt,
       subtitle: entry.prompt,
-      prefilledBlocks,
-      correctBlocks,
+      prefilledBlocks: safePrefilledBlocks,
+      correctBlocks: safeCorrectBlocks,
       suggestionPool: unique([entry.answer, entry.duelTrap, ...entry.blockOptions]).slice(0, 5),
       hint: entry.hint,
       explanation: entry.explanation,
@@ -5795,6 +5801,215 @@ const MATH_CHAPTERS = attachExercises(MATH_QUIZ_CHAPTERS, buildMathExercises()).
   sujetTypes: buildMathSujetTypes().filter((item) => item.chapterNumber === chapter.number),
 }));
 
+function hq(prompt, correct, wrongs, answer, blockOptions, hint, explanation) {
+  return createSentenceCase({
+    prompt,
+    correct,
+    wrongs,
+    answer,
+    blockOptions,
+    hint,
+    explanation,
+    duelPrompt: `Entre « ${answer} » et « ${blockOptions.find((option) => option !== answer) || wrongs[0]} », quel élément rend l’analyse historique ou géographique exacte ?`,
+    trapPrompt: `Repérez les affirmations qui déforment le chapitre : ${hint}`,
+    deminagePrompt: `Corrigez l’affirmation en respectant la chronologie, les acteurs et les notions : ${hint}`,
+  });
+}
+
+const HISTORY_GEO_QUIZ_CHAPTERS = [
+  {
+    subject: 'Histoire-Géographie',
+    number: 1,
+    title: 'Histoire · Le monde après la Seconde Guerre mondiale',
+    description: 'Conséquences de 1945, création de l’ONU, nouvel ordre mondial, guerre froide, crises, détente, décolonisation et Tiers-Monde.',
+    quizItems: [
+      {
+        title: 'Construction du monde nouveau après 1945',
+        description: 'Comprendre les conséquences humaines, matérielles, politiques et institutionnelles de la guerre.',
+        cases: [
+          hq('Identifiez l’institution créée pour préserver la paix après 1945.', 'L’ONU est créée en 1945 pour maintenir la paix et favoriser la coopération internationale.', ['L’OTAN est créée en 1945 pour remplacer l’ONU.', 'Le Pacte de Varsovie est créé en 1945 par les Alliés occidentaux.', 'La SDN est créée après 1945 avec un pouvoir renforcé.'], 'ONU', ['ONU', 'OTAN', 'Pacte de Varsovie', 'SDN'], 'L’ONU naît officiellement en 1945.', 'Elle remplace l’échec de la SDN et symbolise la recherche d’un ordre international nouveau.'),
+          hq('Résumez le bilan humain de la Seconde Guerre mondiale.', 'La Seconde Guerre mondiale provoque des pertes humaines massives et des sociétés profondément traumatisées.', ['La guerre épargne les civils.', 'La guerre ne touche que l’Europe occidentale.', 'Le bilan humain est faible par rapport à 1914-1918.'], 'pertes humaines massives', ['pertes humaines massives', 'civils épargnés', 'Europe seule', 'bilan faible'], 'Le conflit est mondial et touche fortement les civils.', 'Les destructions et génocides marquent durablement les sociétés.'),
+          hq('Caractérisez le nouvel ordre mondial après 1945.', 'Après 1945, les États-Unis et l’URSS deviennent les deux superpuissances dominantes.', ['Après 1945, l’Europe conserve seule la domination mondiale.', 'Après 1945, Madagascar devient une superpuissance.', 'Après 1945, la SDN dirige le monde.'], 'États-Unis et URSS', ['États-Unis et URSS', 'Europe seule', 'Madagascar', 'SDN'], 'Le monde devient progressivement bipolaire.', 'Les deux vainqueurs structurent les relations internationales.'),
+          hq('Expliquez le rôle du Conseil de sécurité.', 'Le Conseil de sécurité porte la responsabilité principale du maintien de la paix.', ['Le Conseil de sécurité organise uniquement le commerce.', 'Le Conseil de sécurité dirige toutes les écoles.', 'Le Conseil de sécurité remplace les États.'], 'maintien de la paix', ['maintien de la paix', 'commerce uniquement', 'écoles', 'remplace les États'], 'C’est un organe central de l’ONU.', 'Ses membres permanents disposent d’un droit de veto.'),
+        ],
+      },
+      {
+        title: 'Guerre froide, crises et détente',
+        description: 'Analyser la bipolarisation, les crises de Berlin et Cuba, la détente et la chute du bloc soviétique.',
+        cases: [
+          hq('Définissez la bipolarisation du monde.', 'La bipolarisation oppose le bloc de l’Ouest dirigé par les États-Unis au bloc de l’Est dirigé par l’URSS.', ['La bipolarisation oppose uniquement deux pays africains.', 'La bipolarisation désigne la décolonisation asiatique.', 'La bipolarisation supprime toute alliance.'], 'bloc de l’Ouest et bloc de l’Est', ['bloc de l’Ouest et bloc de l’Est', 'deux pays africains', 'décolonisation', 'sans alliance'], 'Deux modèles idéologiques structurent le monde.', 'Capitalisme libéral et communisme s’affrontent indirectement.'),
+          hq('Identifiez une crise majeure de la guerre froide.', 'La crise de Cuba en 1962 illustre le risque d’affrontement nucléaire.', ['La crise de Cuba date de 1914.', 'La crise de Cuba concerne uniquement la décolonisation malgache.', 'La crise de Cuba met fin à l’ONU.'], 'crise de Cuba', ['crise de Cuba', '1914', 'décolonisation malgache', 'fin de l’ONU'], 'Cuba est un moment de tension extrême entre USA et URSS.', 'La crise se résout par négociation mais révèle le danger nucléaire.'),
+          hq('Situez la détente dans l’évolution de la guerre froide.', 'La détente correspond à une période de dialogue relatif entre les deux blocs.', ['La détente signifie la disparition immédiate des deux blocs.', 'La détente signifie la colonisation de l’Afrique.', 'La détente commence avant 1945.'], 'dialogue relatif', ['dialogue relatif', 'disparition immédiate', 'colonisation', 'avant 1945'], 'La détente ne supprime pas la rivalité.', 'Elle réduit temporairement les tensions directes.'),
+          hq('Expliquez la chute du bloc soviétique.', 'La chute du bloc soviétique marque la fin de la bipolarisation Est-Ouest.', ['Elle marque le début de la Seconde Guerre mondiale.', 'Elle renforce la SDN.', 'Elle fonde l’empire colonial français.'], 'fin de la bipolarisation', ['fin de la bipolarisation', 'début guerre mondiale', 'SDN', 'empire colonial'], 'L’URSS disparaît en 1991.', 'Le système international devient plus multipolaire et dominé par les États-Unis au départ.'),
+        ],
+      },
+      {
+        title: 'Décolonisation et Tiers-Monde',
+        description: 'Comprendre les causes, phases et conséquences de la décolonisation.',
+        cases: [
+          hq('Identifiez une cause de la décolonisation.', 'L’affaiblissement des puissances coloniales après 1945 favorise les indépendances.', ['La puissance coloniale est renforcée partout.', 'L’ONU interdit les nationalismes.', 'Les colonies refusent toute autonomie.'], 'affaiblissement des puissances coloniales', ['affaiblissement des puissances coloniales', 'puissance renforcée', 'ONU contre nationalismes', 'refus autonomie'], 'La guerre fragilise les métropoles européennes.', 'Les mouvements nationalistes et le contexte international accélèrent les indépendances.'),
+          hq('Donnez l’ordre général des phases de décolonisation.', 'La décolonisation touche d’abord l’Asie puis s’étend fortement à l’Afrique.', ['Elle commence par l’Europe puis l’Amérique.', 'Elle touche uniquement Madagascar.', 'Elle commence après 2000.'], 'Asie puis Afrique', ['Asie puis Afrique', 'Europe puis Amérique', 'Madagascar seulement', 'après 2000'], 'Les indépendances asiatiques précèdent souvent les indépendances africaines.', 'L’Afrique connaît une vague majeure autour de 1960.'),
+          hq('Définissez le Tiers-Monde.', 'Le Tiers-Monde désigne des pays nouvellement indépendants cherchant une voie entre les deux blocs.', ['Le Tiers-Monde est un troisième bloc militaire soviétique.', 'Le Tiers-Monde désigne uniquement les pays riches.', 'Le Tiers-Monde est une ancienne organisation sportive.'], 'pays nouvellement indépendants', ['pays nouvellement indépendants', 'bloc militaire', 'pays riches', 'sport'], 'Le terme renvoie aux États issus de la décolonisation.', 'Ils revendiquent développement, souveraineté et parfois non-alignement.'),
+          hq('Expliquez le rôle des nationalismes.', 'Les mouvements nationalistes revendiquent l’indépendance et la souveraineté des peuples colonisés.', ['Ils demandent toujours plus de colonisation.', 'Ils refusent toute identité nationale.', 'Ils défendent uniquement les métropoles.'], 'indépendance et souveraineté', ['indépendance et souveraineté', 'plus de colonisation', 'sans identité', 'métropoles'], 'Le nationalisme colonial valorise le droit des peuples à disposer d’eux-mêmes.', 'Il nourrit les partis et mouvements indépendantistes.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Histoire-Géographie',
+    number: 2,
+    title: 'Histoire · Madagascar de 1947 à nos jours',
+    description: 'Insurrection de 1947, marche vers l’indépendance, Républiques malgaches, crises politiques, choix économiques et sociaux.',
+    quizItems: [
+      {
+        title: 'Insurrection de 1947 et indépendance',
+        description: 'Comprendre les causes, le déroulement, les conséquences de 1947 et le processus vers 1960.',
+        cases: [
+          hq('Situez l’insurrection malgache majeure de l’après-guerre.', 'L’insurrection de 1947 marque une étape importante de la revendication nationale malgache.', ['L’insurrection principale date de 1847.', 'Elle a lieu après l’indépendance de 1960.', 'Elle concerne uniquement l’Europe.'], '1947', ['1947', '1847', 'après 1960', 'Europe'], '1947 est une date centrale de l’histoire malgache.', 'Elle révèle la tension coloniale et la revendication d’indépendance.'),
+          hq('Identifiez une conséquence de l’insurrection de 1947.', 'La répression de 1947 marque durablement la mémoire politique malgache.', ['Elle supprime toute revendication nationale définitivement.', 'Elle crée immédiatement l’ONU.', 'Elle transforme Madagascar en superpuissance.'], 'mémoire politique malgache', ['mémoire politique malgache', 'fin définitive', 'ONU', 'superpuissance'], 'La répression est un fait majeur.', 'Elle pèse sur les relations entre colonisés et administration coloniale.'),
+          hq('Donnez l’année du retour de l’indépendance.', 'Madagascar retrouve son indépendance en 1960.', ['Madagascar retrouve son indépendance en 1945.', 'Madagascar retrouve son indépendance en 1991.', 'Madagascar retrouve son indépendance en 2009.'], '1960', ['1960', '1945', '1991', '2009'], '1960 est l’année clé de l’indépendance malgache.', 'Elle s’inscrit dans la grande vague africaine des indépendances.'),
+          hq('Expliquez la marche vers l’indépendance.', 'La marche vers l’indépendance combine revendications nationalistes, réformes politiques et contexte international favorable.', ['Elle dépend uniquement d’un événement sportif.', 'Elle exclut les partis politiques.', 'Elle commence avec la chute de l’URSS.'], 'revendications nationalistes', ['revendications nationalistes', 'sport', 'sans partis', 'chute URSS'], 'Le processus est politique et progressif.', 'Il ne se limite pas à une date isolée.'),
+        ],
+      },
+      {
+        title: 'Républiques, transitions et crises',
+        description: 'Identifier les régimes depuis 1960 et les crises politiques marquantes.',
+        cases: [
+          hq('Caractérisez l’histoire politique malgache depuis 1960.', 'Madagascar connaît plusieurs Républiques, transitions et crises politiques.', ['Madagascar garde un seul régime inchangé.', 'Madagascar devient une colonie en 2009.', 'Madagascar n’a aucune transition politique.'], 'plusieurs Républiques', ['plusieurs Républiques', 'un seul régime', 'colonie en 2009', 'aucune transition'], 'Les changements de République structurent la période.', 'Les crises de 1972, 1991, 2002 et 2009 sont des repères.'),
+          hq('Associez 1972 à l’histoire politique malgache.', 'La crise de 1972 marque une rupture politique majeure à Madagascar.', ['1972 est la date de création de l’ONU.', '1972 correspond à la chute de l’URSS.', '1972 est l’indépendance malgache.'], 'rupture politique majeure', ['rupture politique majeure', 'ONU', 'chute URSS', 'indépendance'], '1972 est un jalon de transition.', 'Elle remet en cause l’ordre politique de la Première République.'),
+          hq('Situez la crise de 2009.', 'La crise de 2009 fait partie des crises politiques récentes de Madagascar.', ['Elle appartient à la décolonisation asiatique.', 'Elle date de la Seconde Guerre mondiale.', 'Elle fonde l’ONU.'], 'crises politiques récentes', ['crises politiques récentes', 'Asie', 'Seconde Guerre mondiale', 'ONU'], '2009 est un repère contemporain.', 'Elle illustre l’instabilité politique de la période récente.'),
+          hq('Expliquez le terme transition politique.', 'Une transition politique désigne une période de passage entre deux situations institutionnelles.', ['Elle désigne une saison climatique.', 'Elle désigne uniquement une production agricole.', 'Elle signifie absence totale d’État.'], 'passage institutionnel', ['passage institutionnel', 'saison', 'agriculture', 'absence État'], 'Les transitions accompagnent souvent les crises.', 'Elles réorganisent provisoirement le pouvoir.'),
+        ],
+      },
+      {
+        title: 'Économie et société malgaches',
+        description: 'Relier les choix économiques aux régimes politiques et aux transformations sociales.',
+        cases: [
+          hq('Reliez économie et politique depuis 1960.', 'Les choix économiques malgaches varient selon les Républiques et les orientations politiques.', ['Ils restent identiques depuis 1960.', 'Ils n’ont aucun lien avec les régimes.', 'Ils dépendent seulement du climat européen.'], 'varient selon les Républiques', ['varient selon les Républiques', 'identiques', 'aucun lien', 'climat européen'], 'Socialisme et libéralisme correspondent à des orientations différentes.', 'L’économie est influencée par les choix politiques.'),
+          hq('Identifiez une orientation économique possible.', 'Le socialisme privilégie un rôle important de l’État dans l’économie.', ['Le socialisme supprime toujours l’État.', 'Le socialisme signifie domination coloniale.', 'Le socialisme est une crise climatique.'], 'rôle important de l’État', ['rôle important de l’État', 'sans État', 'domination coloniale', 'climat'], 'La Deuxième République est souvent associée à une orientation socialiste.', 'L’État intervient dans les choix économiques.'),
+          hq('Identifiez l’autre orientation évoquée.', 'Le libéralisme accorde davantage de place au marché et aux acteurs privés.', ['Le libéralisme interdit les échanges.', 'Le libéralisme signifie guerre froide uniquement.', 'Le libéralisme impose une économie fermée.'], 'marché et acteurs privés', ['marché et acteurs privés', 'interdit échanges', 'guerre froide', 'économie fermée'], 'Le libéralisme s’oppose à une économie très étatisée.', 'Il valorise l’ouverture et l’initiative privée.'),
+          hq('Expliquez un grand fait social.', 'Les crises politiques et les choix économiques influencent les conditions de vie de la population.', ['La société n’est jamais touchée par la politique.', 'Les conditions de vie dépendent seulement de Berlin.', 'La population disparaît du programme.'], 'conditions de vie', ['conditions de vie', 'jamais touchée', 'Berlin', 'disparaît'], 'L’histoire sociale relie population, économie et politique.', 'Les transformations économiques ont des effets sociaux.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Histoire-Géographie',
+    number: 3,
+    title: 'Géographie · Le monde d’aujourd’hui',
+    description: 'Après l’URSS, mondialisation, acteurs, flux, PIB, IDH, contrastes de développement et domination Nord-Sud.',
+    quizItems: [
+      {
+        title: 'Nouvelle donne et mondialisation',
+        description: 'Comprendre les changements géopolitiques et économiques après la disparition de l’URSS.',
+        cases: [
+          hq('Expliquez l’effet de la disparition de l’URSS.', 'La disparition de l’URSS transforme les équilibres géopolitiques mondiaux.', ['Elle renforce la bipolarisation classique.', 'Elle provoque la création de la SDN.', 'Elle annule la mondialisation.'], 'équilibres géopolitiques', ['équilibres géopolitiques', 'bipolarisation classique', 'SDN', 'annule mondialisation'], 'La fin de l’URSS change l’organisation du monde.', 'Le monde d’après guerre froide est moins strictement bipolaire.'),
+          hq('Définissez la mondialisation.', 'La mondialisation est l’intensification des échanges et des interdépendances à l’échelle mondiale.', ['La mondialisation est la fermeture des frontières à tous les flux.', 'La mondialisation concerne uniquement un village.', 'La mondialisation supprime tous les acteurs.'], 'échanges et interdépendances', ['échanges et interdépendances', 'fermeture', 'village', 'sans acteurs'], 'Flux, acteurs et réseaux sont essentiels.', 'Elle concerne marchandises, capitaux, informations, cultures et migrations.'),
+          hq('Identifiez un acteur de la mondialisation.', 'Les firmes transnationales sont des acteurs majeurs de la mondialisation.', ['Les firmes transnationales sont des montagnes.', 'Les firmes transnationales n’échangent jamais.', 'Les firmes transnationales remplacent les climats.'], 'firmes transnationales', ['firmes transnationales', 'montagnes', 'sans échange', 'climats'], 'Les FTN organisent production et échanges à plusieurs échelles.', 'Elles participent aux flux mondiaux.'),
+          hq('Identifiez un flux de la mondialisation.', 'Les flux de marchandises, capitaux, informations et cultures structurent la mondialisation.', ['Les flux désignent uniquement les reliefs.', 'Les flux sont toujours immobiles.', 'Les flux excluent les informations.'], 'marchandises, capitaux, informations et cultures', ['marchandises, capitaux, informations et cultures', 'reliefs', 'immobiles', 'sans informations'], 'Un flux est une circulation.', 'La mondialisation repose sur la multiplication de ces circulations.'),
+        ],
+      },
+      {
+        title: 'Développement, PIB et IDH',
+        description: 'Mesurer richesse, développement humain et contrastes entre espaces.',
+        cases: [
+          hq('Définissez le PIB.', 'Le PIB mesure la richesse produite sur un territoire pendant une période donnée.', ['Le PIB mesure seulement l’espérance de vie.', 'Le PIB est une organisation militaire.', 'Le PIB mesure uniquement la pluie.'], 'richesse produite', ['richesse produite', 'espérance de vie', 'organisation militaire', 'pluie'], 'Le PIB est un indicateur économique.', 'Il ne suffit pas à mesurer tout le développement humain.'),
+          hq('Définissez l’IDH.', 'L’IDH combine revenu, santé et éducation pour évaluer le développement humain.', ['L’IDH mesure uniquement le PIB.', 'L’IDH mesure la longitude.', 'L’IDH désigne une alliance militaire.'], 'revenu, santé et éducation', ['revenu, santé et éducation', 'PIB seulement', 'longitude', 'alliance'], 'L’IDH est plus social que le PIB seul.', 'Il intègre plusieurs dimensions du développement.'),
+          hq('Expliquez les contrastes de développement.', 'Les contrastes de développement désignent les écarts de richesse et de conditions de vie entre territoires.', ['Ils désignent uniquement les fuseaux horaires.', 'Ils signifient égalité parfaite partout.', 'Ils concernent seulement les océans.'], 'écarts de richesse et de conditions de vie', ['écarts de richesse et de conditions de vie', 'fuseaux horaires', 'égalité parfaite', 'océans'], 'Le programme insiste sur les inégalités.', 'Les contrastes se lisent à différentes échelles.'),
+          hq('Expliquez les rapports Nord-Sud.', 'Les rapports Nord-Sud mettent en évidence des inégalités et parfois des échanges défavorables aux pays du Sud.', ['Ils signifient que tous les pays ont le même niveau.', 'Ils concernent uniquement les pôles géographiques.', 'Ils suppriment toute domination.'], 'inégalités', ['inégalités', 'même niveau', 'pôles', 'sans domination'], 'Nord et Sud sont des catégories de développement.', 'Elles montrent des rapports économiques déséquilibrés.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Histoire-Géographie',
+    number: 4,
+    title: 'Géographie · Madagascar en quête de développement',
+    description: 'Milieu naturel, population, pauvreté, sous-développement, secteurs économiques, aménagement et réduction des inégalités régionales.',
+    quizItems: [
+      {
+        title: 'Milieu naturel, population et risques',
+        description: 'Analyser potentialités, contraintes naturelles, croissance démographique, jeunesse et urbanisation.',
+        cases: [
+          hq('Identifiez une potentialité naturelle de Madagascar.', 'Le relief, le climat et les ressources offrent des potentialités économiques variées.', ['Le milieu naturel ne présente aucune ressource.', 'Madagascar n’a aucun climat.', 'Le relief interdit toute activité humaine.'], 'potentialités économiques', ['potentialités économiques', 'aucune ressource', 'aucun climat', 'aucune activité'], 'Le milieu naturel offre des atouts mais aussi des contraintes.', 'Il faut toujours nuancer l’analyse.'),
+          hq('Identifiez un risque naturel important.', 'Les cyclones et l’érosion font partie des risques qui fragilisent Madagascar.', ['Les cyclones renforcent toujours les infrastructures.', 'L’érosion n’existe que sur la Lune.', 'Les risques naturels sont absents.'], 'cyclones et érosion', ['cyclones et érosion', 'renforcent infrastructures', 'Lune', 'absents'], 'Les risques pèsent sur la population et l’économie.', 'Ils aggravent parfois la pauvreté.'),
+          hq('Caractérisez la population malgache.', 'La population malgache est marquée par une forte croissance et une grande jeunesse.', ['Elle diminue toujours fortement.', 'Elle est uniquement urbaine.', 'Elle ne pose aucun défi.'], 'forte croissance et grande jeunesse', ['forte croissance et grande jeunesse', 'diminue', 'uniquement urbaine', 'sans défi'], 'La dynamique démographique est un thème central.', 'Elle entraîne des besoins en emplois, écoles et services.'),
+          hq('Expliquez le défi de l’urbanisation.', 'L’urbanisation rapide exige des logements, infrastructures et services adaptés.', ['L’urbanisation supprime les besoins.', 'L’urbanisation est seulement un relief.', 'L’urbanisation concerne uniquement les océans.'], 'logements, infrastructures et services', ['logements, infrastructures et services', 'supprime besoins', 'relief', 'océans'], 'La croissance urbaine doit être aménagée.', 'Sinon elle accentue les inégalités et la précarité.'),
+        ],
+      },
+      {
+        title: 'Pauvreté, économie et solutions',
+        description: 'Comprendre sous-développement, secteurs d’activité, ressources et aménagement.',
+        cases: [
+          hq('Expliquez le paradoxe du sous-développement.', 'Madagascar possède des ressources mais rencontre de fortes difficultés de développement.', ['Madagascar n’a aucune ressource.', 'Les ressources garantissent automatiquement le développement.', 'La pauvreté n’a aucune cause.'], 'ressources mais difficultés', ['ressources mais difficultés', 'aucune ressource', 'automatique', 'aucune cause'], 'Le développement dépend aussi des infrastructures, institutions et choix économiques.', 'Ressources ne signifient pas richesse partagée.'),
+          hq('Identifiez un secteur d’activité malgache important.', 'L’agriculture, les mines et le tourisme font partie des secteurs économiques importants.', ['Les secteurs économiques se limitent à l’astronomie.', 'Le tourisme est impossible partout.', 'Les mines ne sont jamais une activité.'], 'agriculture, mines et tourisme', ['agriculture, mines et tourisme', 'astronomie', 'tourisme impossible', 'mines jamais'], 'Le programme cite ces secteurs.', 'Ils portent des potentialités et des défis.'),
+          hq('Expliquez un obstacle au développement.', 'Le manque d’infrastructures et les inégalités régionales freinent le développement.', ['Les infrastructures n’ont aucun rôle.', 'Les inégalités régionales favorisent toujours l’équilibre.', 'Le développement dépend seulement des frontières.'], 'manque d’infrastructures', ['manque d’infrastructures', 'aucun rôle', 'inégalités favorables', 'frontières seulement'], 'Routes, énergie, services et équipements sont essentiels.', 'Les territoires mal reliés restent marginalisés.'),
+          hq('Proposez une solution d’aménagement.', 'Améliorer les infrastructures et réduire les inégalités régionales peut soutenir le développement.', ['Supprimer les services publics développe automatiquement.', 'Ignorer les régions pauvres suffit.', 'Fermer tous les échanges est la seule solution.'], 'améliorer les infrastructures', ['améliorer les infrastructures', 'supprimer services', 'ignorer régions', 'fermer échanges'], 'L’aménagement vise une meilleure organisation de l’espace.', 'Il doit intégrer infrastructures, services et équilibre régional.'),
+        ],
+      },
+    ],
+  },
+];
+
+function createHistoryGeoQuestion(question, steps, answers, hint, explanation) {
+  const distractors = ['réponse sans date', 'confusion de chapitre', 'acteur mal identifié', 'cause unique', 'conclusion non justifiée', 'chronologie inversée'];
+  return createMathQuestion(question, steps, answers, distractors, hint, explanation);
+}
+
+function buildHistoryGeoExerciseFromChapter(chapter, index, variant = 'exercice') {
+  const topic = [
+    'analyse chronologique et notions essentielles',
+    'composition argumentée avec exemples précis',
+    'étude de documents et mise en relation',
+  ][index] || 'synthèse structurée';
+  const title = variant === 'sujet-type'
+    ? `Sujet type Bac — ${chapter.title}`
+    : `Exercice long ${index + 1} — ${chapter.title}`;
+  const introduction = `${variant === 'sujet-type' ? 'Sujet type.' : 'Énoncé.'}\n\n${chapter.description}\n\nLe travail porte sur ${topic}. L’élève doit répondre en paragraphes organisés, citer les dates ou indicateurs nécessaires, distinguer causes, faits et conséquences, puis conclure clairement.`;
+  const supportText = `Documents de référence : résumé du programme Terminale D fourni pour ${chapter.title}. Les réponses doivent mobiliser les notions du chapitre et éviter les affirmations vagues.`;
+  const questions = (chapter.quizItems || []).slice(0, 3).map((item, itemIndex) => createHistoryGeoQuestion(
+    `À partir du thème « ${item.title} », rédiger une réponse structurée montrant les acteurs, les causes, les conséquences et les limites du phénomène étudié.`,
+    ['Identifier les mots-clés du sujet', 'Classer les informations en causes, faits et conséquences', 'Rédiger une réponse organisée avec exemples', 'Conclure en répondant exactement à la question'],
+    [
+      { instruction: 'Donner l’idée principale du thème.', answer: item.description },
+      { instruction: 'Citer un repère précis.', answer: item.cases?.[0]?.answer || item.cases?.[0]?.correct || chapter.title },
+      { instruction: 'Formuler une conséquence ou un enjeu.', answer: item.cases?.[1]?.explanation || chapter.description },
+      { instruction: 'Écrire la conclusion.', answer: `Le thème « ${item.title} » explique une partie essentielle du chapitre « ${chapter.title} ».` },
+    ],
+    'Construire une réponse en paragraphes : idée, exemple, explication.',
+    'La réponse attendue doit être contextualisée et ne pas seulement réciter un mot isolé.'
+  ));
+
+  return {
+    title,
+    introduction,
+    supportText,
+    instructions: 'Traiter toutes les questions. Chaque réponse doit être rédigée, organisée et appuyée sur au moins un repère précis du chapitre.',
+    timeLimitSeconds: variant === 'sujet-type' ? 10800 : 7200,
+    initialScore: variant === 'sujet-type' ? 36 : 24,
+    questions,
+  };
+}
+
+function buildHistoryGeoExercises() {
+  return HISTORY_GEO_QUIZ_CHAPTERS.flatMap((chapter) => [0, 1, 2].map((index) => ({
+    chapterNumber: chapter.number,
+    ...buildHistoryGeoExerciseFromChapter(chapter, index, 'exercice'),
+  })));
+}
+
+function buildHistoryGeoSujetTypes() {
+  return HISTORY_GEO_QUIZ_CHAPTERS.map((chapter) => ({
+    chapterNumber: chapter.number,
+    ...buildHistoryGeoExerciseFromChapter(chapter, 1, 'sujet-type'),
+  }));
+}
+
+const HISTORY_GEO_CHAPTERS = attachExercises(HISTORY_GEO_QUIZ_CHAPTERS, buildHistoryGeoExercises()).map((chapter) => ({
+  ...chapter,
+  sujetTypes: buildHistoryGeoSujetTypes().filter((item) => item.chapterNumber === chapter.number),
+}));
+
 const MASSIVE_DOWNLOADABLE_EXAMPLES = [
   ...buildQuizPackEntries(FRENCH_CHAPTERS, 2),
   ...buildExercisePackEntries(FRENCH_CHAPTERS, 2),
@@ -5803,6 +6018,9 @@ const MASSIVE_DOWNLOADABLE_EXAMPLES = [
   ...buildQuizPackEntries(MATH_CHAPTERS, 4),
   ...buildExercisePackEntries(MATH_CHAPTERS, 4),
   ...buildSujetTypePackEntries(MATH_CHAPTERS, 4),
+  ...buildQuizPackEntries(HISTORY_GEO_CHAPTERS, 3),
+  ...buildExercisePackEntries(HISTORY_GEO_CHAPTERS, 3),
+  ...buildSujetTypePackEntries(HISTORY_GEO_CHAPTERS, 3),
 ];
 
 function firstPayloadByKind(entries, matcher) {
@@ -5828,6 +6046,14 @@ const firstMathExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
   ?.files || [];
 const firstMathSujetTypeFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
   .find((entry) => entry.id === 'mathematiques-sujet-type-pack-1')
+  ?.files || [];
+const firstHistoryGeoSuggestion = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_suggestion' && payload.chapterTitle === 'Histoire · Le monde après la Seconde Guerre mondiale');
+const firstHistoryGeoDeminage = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_deminage' && payload.chapterTitle === 'Histoire · Le monde après la Seconde Guerre mondiale');
+const firstHistoryGeoExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
+  .find((entry) => entry.id === 'histoire-geographie-exercise-pack-1')
+  ?.files || [];
+const firstHistoryGeoSujetTypeFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
+  .find((entry) => entry.id === 'histoire-geographie-sujet-type-pack-1')
   ?.files || [];
 
 export const MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES = [
@@ -5885,6 +6111,34 @@ export const MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES = [
     category: 'Terminale massif',
     label: `Mathématiques Terminale · ${file.label}`,
     description: 'Extrait d un sujet type long Terminale en Mathématiques.',
+    payload: file.payload,
+  })),
+  firstHistoryGeoSuggestion ? {
+    id: 'histoire_geo_terminale_quiz_massif_suggestion',
+    category: 'Terminale massif',
+    label: 'Histoire-Géographie Terminale · Quiz suggestion',
+    description: 'Extrait d un pack massif de quiz Terminale en Histoire-Géographie.',
+    payload: firstHistoryGeoSuggestion,
+  } : null,
+  firstHistoryGeoDeminage ? {
+    id: 'histoire_geo_terminale_quiz_massif_deminage',
+    category: 'Terminale massif',
+    label: 'Histoire-Géographie Terminale · Quiz déminage',
+    description: 'Extrait du mode Déminage pour les quiz Terminale en Histoire-Géographie.',
+    payload: firstHistoryGeoDeminage,
+  } : null,
+  ...firstHistoryGeoExerciseFiles.map((file, index) => ({
+    id: `histoire_geo_terminale_exercice_long_${index + 1}`,
+    category: 'Terminale massif',
+    label: `Histoire-Géographie Terminale · ${file.label}`,
+    description: 'Extrait d un exercice long Terminale en Histoire-Géographie.',
+    payload: file.payload,
+  })),
+  ...firstHistoryGeoSujetTypeFiles.map((file, index) => ({
+    id: `histoire_geo_terminale_sujet_type_long_${index + 1}`,
+    category: 'Terminale massif',
+    label: `Histoire-Géographie Terminale · ${file.label}`,
+    description: 'Extrait d un sujet type long Terminale en Histoire-Géographie.',
     payload: file.payload,
   })),
 ].filter(Boolean);
