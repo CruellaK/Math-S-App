@@ -5512,6 +5512,69 @@ const MATH_QUIZ_CHAPTERS = [
   },
 ];
 
+const MATH_EXTRA_QUIZ_ITEMS = {
+  1: [
+    {
+      title: 'Équations et inéquations logarithmiques',
+      description: 'Résoudre avec les conditions d’existence, les propriétés de ln et la stricte croissance.',
+      cases: [
+        mq('Résolvez ln(x-1)=ln(5).', 'x-1=5 donc x=6, avec x>1.', ['x=4.', 'x=5.', 'x=-4.'], 'x=6', ['x=6', 'x=4', 'x=5', 'x=-4'], 'ln est injective sur ]0,+∞[.', 'On vérifie d’abord x-1>0 puis on égalise les arguments.'),
+        mq('Résolvez ln(x)<ln(4).', 'x<4 avec x>0 donc S=]0,4[.', ['S=]-∞,4[.', 'S=]4,+∞[.', 'S=[0,4].'], ']0,4[', [']0,4[', ']-∞,4[', ']4,+∞[', '[0,4]'], 'La croissance de ln conserve le sens de l’inégalité.', 'La condition x>0 ne doit pas disparaître.'),
+        mq('Simplifiez ln(x²)-ln(x) sur ]0,+∞[.', 'ln(x²)-ln(x)=ln(x).', ['ln(x²)-ln(x)=ln(x²-x).', 'ln(x²)-ln(x)=x.', 'ln(x²)-ln(x)=2.'], 'ln(x)', ['ln(x)', 'ln(x²-x)', 'x', '2'], 'ln(a)-ln(b)=ln(a/b).', 'x²/x=x pour x>0.'),
+        mq('Résolvez ln(x)+ln(2)=ln(10).', 'ln(2x)=ln(10) donc x=5, avec x>0.', ['x=8.', 'x=10.', 'x=1/5.'], 'x=5', ['x=5', 'x=8', 'x=10', 'x=1/5'], 'Une somme de logarithmes devient le logarithme du produit.', 'ln(2x)=ln(10) donne 2x=10.'),
+      ],
+    },
+  ],
+  2: [
+    {
+      title: 'Étude complète avant réciproque',
+      description: 'Domaine, dérivée, variations, bijection et traduction par la fonction réciproque.',
+      cases: [
+        mq('Pour f(x)=x+lnx sur ]0,+∞[, donnez le signe de f’.', 'f’(x)=1+1/x>0 sur ]0,+∞[.', ['f’(x)=1-1/x<0 partout.', 'f’(x)=lnx.', 'f’(x)=0 partout.'], 'f’(x)>0', ['f’(x)>0', 'f’(x)<0', 'f’(x)=lnx', 'f’(x)=0'], 'Sur ]0,+∞[, 1/x est positif.', 'La fonction est strictement croissante.'),
+        mq('Concluez sur la bijection de f(x)=x+lnx.', 'f réalise une bijection de ]0,+∞[ vers R.', ['f réalise une bijection de R vers R.', 'f n’est pas monotone.', 'f est définie sur ]-∞,0[.'], ']0,+∞[ vers R', [']0,+∞[ vers R', 'R vers R', 'pas monotone', ']-∞,0['], 'Les limites sont -∞ en 0+ et +∞ en +∞.', 'Continuité et stricte croissance donnent la bijection.'),
+        mq('Si f(1)=1, donnez la valeur de la réciproque.', 'f^{-1}(1)=1.', ['f^{-1}(1)=0.', 'f^{-1}(1)=e.', 'f^{-1}(1)=-1.'], 'f^{-1}(1)=1', ['f^{-1}(1)=1', '0', 'e', '-1'], 'La réciproque renvoie l’antécédent.', 'Si l’image de 1 est 1, l’antécédent de 1 est 1.'),
+        mq('Donnez la dérivée de la réciproque en 1 si f’(1)=2.', '(f^{-1})’(1)=1/2.', ['(f^{-1})’(1)=2.', '(f^{-1})’(1)=0.', '(f^{-1})’(1)=-2.'], '1/2', ['1/2', '2', '0', '-2'], 'La dérivée réciproque est l’inverse de la dérivée initiale.', 'On applique 1/f’(x0).'),
+      ],
+    },
+  ],
+  3: [
+    {
+      title: 'Aires, primitives composées et IPP',
+      description: 'Choisir la bonne primitive, poser une IPP et conclure en unités d’aire.',
+      cases: [
+        mq('Calculez une primitive de 2x e^{x²}.', 'Une primitive est e^{x²}.', ['Une primitive est 2e^{x²}.', 'Une primitive est x²e^x.', 'Une primitive est ln(x²).'], 'e^{x²}', ['e^{x²}', '2e^{x²}', 'x²e^x', 'ln(x²)'], 'On reconnaît u’e^u avec u=x².', 'La dérivée de e^{x²} vaut 2xe^{x²}.'),
+        mq('Pour ∫_0^1 e^{2x}dx, choisissez la primitive.', 'Une primitive est (1/2)e^{2x}.', ['Une primitive est 2e^{2x}.', 'Une primitive est e^{x²}.', 'Une primitive est ln(2x).'], '(1/2)e^{2x}', ['(1/2)e^{2x}', '2e^{2x}', 'e^{x²}', 'ln(2x)'], 'Il faut compenser la dérivée de 2x.', 'La dérivée de (1/2)e^{2x} vaut e^{2x}.'),
+        mq('Dans une IPP de ∫x e^x dx, choisissez u et v’.', 'On prend u=x et v’=e^x.', ['On prend u=e^x et v’=x.', 'On prend u=x² et v’=lnx.', 'On prend u=1 et v’=x.'], 'u=x et v’=e^x', ['u=x et v’=e^x', 'u=e^x et v’=x', 'u=x²', 'u=1'], 'On dérive le polynôme et on primitive exponentielle facilement.', 'Ce choix simplifie l’intégrale restante.'),
+        mq('Si f est positive sur [a,b], interprétez ∫_a^b f(x)dx.', 'C’est l’aire sous la courbe en unités d’aire.', ['C’est une longueur en cm.', 'C’est une probabilité obligatoire.', 'C’est toujours nul.'], 'aire sous la courbe', ['aire sous la courbe', 'longueur', 'probabilité', 'nul'], 'L’intégrale positive mesure l’aire entre courbe et axe.', 'On conclut en unités d’aire.'),
+      ],
+    },
+  ],
+  4: [
+    {
+      title: 'Dénombrement et loi binomiale en situation',
+      description: 'Choisir entre combinaison, arrangement et modèle binomial selon l’expérience.',
+      cases: [
+        mq('Pour choisir 3 élèves parmi 12 sans ordre, choisissez le calcul.', 'On calcule C_12^3.', ['On calcule 12^3.', 'On calcule A_12^3.', 'On calcule 12+3.'], 'C_12^3', ['C_12^3', '12^3', 'A_12^3', '12+3'], 'Sans ordre, on utilise les combinaisons.', 'On choisit un groupe, pas une liste ordonnée.'),
+        mq('Pour former un code de 4 chiffres avec répétition, choisissez le cardinal.', 'Il y a 10^4 codes.', ['Il y a C_10^4 codes.', 'Il y a 10×4 codes.', 'Il y a 4^10 codes.'], '10^4', ['10^4', 'C_10^4', '10×4', '4^10'], 'Chaque position a 10 possibilités.', 'La répétition rend les choix indépendants.'),
+        mq('Pour X~B(20;0,3), donnez E(X).', 'E(X)=20×0,3=6.', ['E(X)=20+0,3.', 'E(X)=0,3/20.', 'E(X)=14.'], '6', ['6', '20,3', '0,015', '14'], 'L’espérance binomiale vaut np.', '20 multiplié par 0,3 donne 6.'),
+        mq('Pour X~B(10;0,4), écrivez P(X=3).', 'P(X=3)=C_10^3(0,4)^3(0,6)^7.', ['P(X=3)=10×0,4×3.', 'P(X=3)=C_10^3(0,4)^7.', 'P(X=3)=3/10.'], 'C_10^3(0,4)^3(0,6)^7', ['C_10^3(0,4)^3(0,6)^7', '10×0,4×3', 'C_10^3(0,4)^7', '3/10'], 'k succès donnent p^k et n-k échecs donnent (1-p)^{n-k}.', 'Ici n=10, k=3 et 1-p=0,6.'),
+      ],
+    },
+  ],
+  5: [
+    {
+      title: 'Synthèse exponentielle, suites et complexes',
+      description: 'Relier calcul fonctionnel, récurrence et interprétation géométrique complexe.',
+      cases: [
+        mq('Résolvez e^x=7.', 'x=ln(7).', ['x=e^7.', 'x=7e.', 'x=1/7.'], 'ln(7)', ['ln(7)', 'e^7', '7e', '1/7'], 'ln est la réciproque de exp.', 'On applique ln aux deux membres.'),
+        mq('Pour u_{n+1}=3u_n et u_0=2, donnez u_n.', 'u_n=2×3^n.', ['u_n=2+3n.', 'u_n=3+2n.', 'u_n=6n.'], '2×3^n', ['2×3^n', '2+3n', '3+2n', '6n'], 'C’est une suite géométrique de raison 3.', 'La formule est u_0q^n.'),
+        mq('Pour z=5-2i, donnez Im(z).', 'Im(z)=-2.', ['Im(z)=5.', 'Im(z)=-2i.', 'Im(z)=2.'], '-2', ['-2', '5', '-2i', '2'], 'La partie imaginaire est le coefficient de i.', 'On ne garde pas le symbole i.'),
+        mq('Si une similitude directe s’écrit z’=az+b, identifiez le coefficient utile au rapport.', 'Le rapport est |a|.', ['Le rapport est b.', 'Le rapport est a+b.', 'Le rapport est Re(b).'], '|a|', ['|a|', 'b', 'a+b', 'Re(b)'], 'Dans z’=az+b, a porte rotation et agrandissement.', 'Le module de a donne le rapport.'),
+      ],
+    },
+  ],
+};
+
 function createMathQuestion(question, steps, answers, distractors, hint, explanation) {
   return {
     question,
@@ -5529,11 +5592,47 @@ function createMathQuestion(question, steps, answers, distractors, hint, explana
   };
 }
 
+const MATH_EXERCISE_CONTEXTS = {
+  1: [
+    'On considère une fonction logarithmique définie par plusieurs expressions sur un intervalle réel. Les bornes proposées dans l’énoncé ne sont pas toutes admissibles : certaines annulent un argument de logarithme, d’autres rendent un quotient négatif. L’élève doit déterminer précisément les domaines, puis poursuivre l’étude par dérivation, simplification et limite.',
+    'Dans une étude de croissance, une entreprise modélise une quantité positive par une expression contenant ln(x), ln(x-2) et un quotient. Les calculs ne sont valables que si chaque logarithme reçoit un argument strictement positif. On demande une rédaction complète avec tableau de signes lorsque le quotient intervient.',
+    'Une courbe représentative est donnée par une expression logarithmique. Avant toute lecture graphique, il faut retrouver l’ensemble de définition, dériver, analyser une limite et expliquer pourquoi les bornes interdites ne peuvent pas être incluses.',
+    'On étudie une famille de fonctions utilisant les propriétés ln(ab), ln(a/b), ln(a^n) et la dérivée de ln(u). L’objectif est de produire une solution de niveau bac, sans saut de calcul et avec justification de chaque transformation.',
+  ],
+  2: [
+    'On étudie une fonction continue sur un intervalle fermé afin de localiser une solution d’équation. Des valeurs numériques aux bornes sont fournies, mais elles ne suffisent pas seules : il faut citer la continuité, vérifier le changement de signe, puis ajouter la monotonie pour obtenir l’unicité.',
+    'Une fonction définie sur un intervalle I est destinée à être inversée. Il faut montrer qu’elle réalise une bijection de I vers son image J, préciser le sens de la fonction réciproque, interpréter graphiquement la symétrie et calculer une dérivée de réciproque.',
+    'Le professeur donne une courbe croissante et plusieurs points remarquables. On demande de reconstruire les points de la courbe réciproque, de formuler la propriété f^{-1}(f(x))=x et de rédiger la conclusion avec les ensembles de départ et d’arrivée.',
+    'Une équation f(x)=0 doit être résolue par encadrement. L’exercice impose de combiner TVI, calcul de dérivée, tableau de variation et conclusion sur l’existence et l’unicité de la solution α.',
+  ],
+  3: [
+    'On considère plusieurs intégrales définies provenant d’aires sous courbe. Les fonctions sont positives sur les intervalles indiqués. Il faut trouver les primitives adaptées, évaluer correctement aux bornes et conclure avec l’unité d’aire.',
+    'Une intégrale contenant un logarithme doit être calculée par intégration par parties. Le choix de u et v’ doit suivre la méthode du document : dériver le logarithme, primitiver le polynôme, puis calculer l’intégrale restante.',
+    'Des primitives composées sont cachées dans des expressions de type u’u^n et u’e^u. L’exercice demande d’identifier u, de vérifier la présence de u’ et de compenser le coefficient si nécessaire.',
+    'Un problème d’aire mélange calcul direct, primitive composée et IPP. Toutes les évaluations aux bornes doivent être écrites sous forme de crochets avant toute simplification numérique.',
+  ],
+  4: [
+    'Une urne contient des boules de plusieurs couleurs. Selon les questions, le tirage est simultané, successif avec remise ou successif sans remise. Il faut donc choisir entre combinaisons, arrangements ou puissances, puis calculer les probabilités demandées.',
+    'Une variable aléatoire X compte un gain ou un nombre de succès. L’énoncé demande de construire la loi complète de X, de vérifier que les probabilités totalisent 1, puis de calculer E(X), V(X) et σ(X).',
+    'Une expérience répétée peut être modélisée par une loi binomiale seulement si les épreuves sont indépendantes, identiques et à deux issues. L’exercice impose de justifier ces conditions avant d’utiliser la formule C_n^k p^k(1-p)^{n-k}.',
+    'Un sujet de probabilités combine dénombrement, événement contraire, fonction de répartition et paramètres d’une variable aléatoire. Les réponses attendues doivent distinguer clairement univers, événement et probabilité.',
+  ],
+  5: [
+    'On étudie une fonction exponentielle puis une suite associée. L’exercice demande le domaine, la dérivée, les limites, le tableau de variation et une interprétation d’une relation de récurrence.',
+    'Une suite numérique est donnée par récurrence. Il faut reconnaître si elle est arithmétique ou géométrique, obtenir une formule explicite, calculer un terme éloigné et interpréter la limite lorsque c’est possible.',
+    'Dans le plan complexe, des points sont définis par leurs affixes. L’exercice demande de lire les coordonnées, séparer partie réelle et partie imaginaire, résoudre une équation complexe et interpréter une transformation de type z’=az+b.',
+    'Un problème de synthèse mélange exponentielle, logarithme réciproque, suites et nombres complexes. Il faut résoudre chaque partie avec la méthode du cours et ne jamais confondre coefficient imaginaire et terme contenant i.',
+  ],
+};
+
 function buildMathExerciseFromChapter(chapter, itemIndex, variant = 'exercice') {
   const baseTitle = variant === 'sujet-type' ? `Sujet type Bac — ${chapter.title}` : `Exercice long ${itemIndex + 1} — ${chapter.title}`;
-  const longIntro = `On travaille dans le chapitre « ${chapter.title} ». L’objectif est de suivre exactement la méthode du professeur : identifier le domaine ou le cadre de validité, écrire les conditions utiles, effectuer les calculs ligne par ligne, puis conclure avec une phrase mathématique complète. Les réponses attendues sont volontairement longues : chaque question doit être traitée par plusieurs rafraîchissements successifs, comme dans un brouillon de bac.`;
-  const supportText = `Document de référence : ${chapter.description} Les méthodes à respecter sont celles du cours Math.txt : conditions strictes pour ln, tableau de signes si nécessaire, TVI avec continuité puis changement de signe, primitive évaluée aux bornes, dénombrement par combinaisons ou arrangements selon la situation, et séparation des parties réelle et imaginaire pour les complexes.`;
-  const instructions = `Traiter toutes les questions. Pour chacune, rédiger le brouillon avant le traitement : annonce de la méthode, calcul intermédiaire, justification, conclusion. Ne pas donner seulement un résultat numérique : toute réponse doit montrer pourquoi la méthode est légitime.`;
+  const context = MATH_EXERCISE_CONTEXTS[chapter.number]?.[itemIndex] || MATH_EXERCISE_CONTEXTS[chapter.number]?.[0] || chapter.description;
+  const longIntro = variant === 'sujet-type'
+    ? `Sujet type de mathématiques.\n\n${context}\n\nLe sujet est composé de parties liées. Les résultats intermédiaires peuvent être réutilisés dans les questions suivantes. Toute réponse doit être rédigée avec les conditions de validité, les calculs et une conclusion claire.`
+    : `Énoncé.\n\n${context}\n\nOn demande de résoudre les questions suivantes comme dans une copie de mathématiques complète : les calculs doivent apparaître, les intervalles doivent être justifiés et les conclusions doivent être écrites en phrases.`;
+  const supportText = `Données utiles du chapitre : ${chapter.description} Les notations usuelles sont celles du cours : D_f pour domaine, α pour une solution localisée par TVI, F(b)-F(a) pour une intégrale, C_n^k pour les combinaisons, E(X), V(X), σ(X) pour une variable aléatoire, Re(z) et Im(z) pour les complexes.`;
+  const instructions = `Questions : traiter toutes les demandes dans l’ordre. Lorsque l’exercice demande une justification, ne pas se limiter au résultat final : écrire les conditions, la méthode, les calculs intermédiaires et la conclusion.`;
   const commonDistractors = ['condition large', 'borne incluse', 'signe inversé', 'résultat sans justification', 'méthode incomplète', 'conclusion absente', 'égalité non valable'];
   const questionSets = {
     1: [
@@ -5662,26 +5761,37 @@ function buildMathExerciseFromChapter(chapter, itemIndex, variant = 'exercice') 
     instructions,
     timeLimitSeconds: variant === 'sujet-type' ? 14400 : 10800,
     initialScore: variant === 'sujet-type' ? 40 : 28,
-    questions: questionSets[chapter.number] || questionSets[1],
+    questions: rotate(questionSets[chapter.number] || questionSets[1], itemIndex),
   };
 }
 
 function buildMathExercises() {
-  return MATH_QUIZ_CHAPTERS.flatMap((chapter) => ([
-    { chapterNumber: chapter.number, ...buildMathExerciseFromChapter(chapter, 0, 'exercice') },
-    { chapterNumber: chapter.number, ...buildMathExerciseFromChapter(chapter, 1, 'exercice'), title: `Exercice méthode approfondie — ${chapter.title}` },
-  ]));
+  return MATH_QUIZ_CHAPTERS.flatMap((chapter) => [0, 1, 2, 3].map((index) => ({
+    chapterNumber: chapter.number,
+    ...buildMathExerciseFromChapter(chapter, index, 'exercice'),
+    title: [
+      `Exercice long ${index + 1} — ${chapter.title}`,
+      `Exercice méthode approfondie — ${chapter.title}`,
+      `Exercice type contrôle — ${chapter.title}`,
+      `Exercice synthèse guidée — ${chapter.title}`,
+    ][index],
+  })));
 }
 
 function buildMathSujetTypes() {
-  return MATH_QUIZ_CHAPTERS.map((chapter) => ({
+  return MATH_QUIZ_CHAPTERS.flatMap((chapter) => [0, 1].map((index) => ({
     chapterNumber: chapter.number,
-    ...buildMathExerciseFromChapter(chapter, 0, 'sujet-type'),
-  }));
+    ...buildMathExerciseFromChapter(chapter, index, 'sujet-type'),
+    title: index === 0 ? `Sujet type Bac — ${chapter.title}` : `Sujet type Bac approfondi — ${chapter.title}`,
+  })));
 }
 
 const MATH_CHAPTERS = attachExercises(MATH_QUIZ_CHAPTERS, buildMathExercises()).map((chapter) => ({
   ...chapter,
+  quizItems: [
+    ...(chapter.quizItems || []),
+    ...(MATH_EXTRA_QUIZ_ITEMS[chapter.number] || []),
+  ],
   sujetTypes: buildMathSujetTypes().filter((item) => item.chapterNumber === chapter.number),
 }));
 
@@ -5712,6 +5822,7 @@ const firstEnglishExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
   .find((entry) => entry.id === 'anglais-exercise-pack-1')
   ?.files || [];
 const firstMathSuggestion = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_suggestion' && payload.chapterTitle === 'Fonction logarithme népérien');
+const firstMathDeminage = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_deminage' && payload.chapterTitle === 'Fonction logarithme népérien');
 const firstMathExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
   .find((entry) => entry.id === 'mathematiques-exercise-pack-1')
   ?.files || [];
@@ -5754,6 +5865,13 @@ export const MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES = [
     label: 'Mathématiques Terminale · Quiz suggestion',
     description: 'Extrait d un pack massif de quiz Terminale en Mathématiques.',
     payload: firstMathSuggestion,
+  } : null,
+  firstMathDeminage ? {
+    id: 'math_terminale_quiz_massif_deminage',
+    category: 'Terminale massif',
+    label: 'Mathématiques Terminale · Quiz déminage',
+    description: 'Extrait du mode Déminage pour les quiz Terminale en Mathématiques.',
+    payload: firstMathDeminage,
   } : null,
   ...firstMathExerciseFiles.map((file, index) => ({
     id: `math_terminale_exercice_long_${index + 1}`,
