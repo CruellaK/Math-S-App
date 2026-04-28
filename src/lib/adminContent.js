@@ -1,4 +1,4 @@
-import { CLASSES, SUBJECTS } from './constants';
+import { CLASSES, DEFAULT_CONTENT_DIFFICULTY, DEFAULT_OBJECTIVE_GROUP_ID, SUBJECTS } from './constants';
 import { LANGUAGE_PROMPT_BANK_EXTENSIONS, MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES } from './languageContentCatalog';
 
 function isObject(value) {
@@ -11,6 +11,21 @@ function normalizeText(value) {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function resolveContentDifficulty(value) {
+  return (value || DEFAULT_CONTENT_DIFFICULTY).toString();
+}
+
+function resolveObjectiveGroup(value) {
+  return (value || DEFAULT_OBJECTIVE_GROUP_ID).toString();
+}
+
+function buildContentMetadata(payload = {}, item = {}) {
+  return {
+    difficulty: resolveContentDifficulty(payload.difficulty || item.difficulty),
+    objectiveGroup: resolveObjectiveGroup(payload.objectiveGroup || item.objectiveGroup),
+  };
 }
 
 function validateSchema(value, schema, path = 'root') {
@@ -942,6 +957,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
         ...item,
         title: resolvedTitle,
         description: payload.description || item.description || '',
+        ...buildContentMetadata(payload, item),
         mode: baseMode,
         type: baseType,
         enonce: payload.enonce,
@@ -958,6 +974,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
         ...item,
         title: resolvedTitle,
         description: payload.description || item.description || '',
+        ...buildContentMetadata(payload, item),
         mode: baseMode,
         type: baseType,
         brouillon: { required: true },
@@ -973,6 +990,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
       list[index] = {
         ...item,
         title: resolvedTitle,
+        ...buildContentMetadata(payload, item),
         mode: baseMode,
         type: baseType,
         brouillon: { required: true },
@@ -991,6 +1009,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
       list[index] = {
         ...item,
         title: resolvedTitle,
+        ...buildContentMetadata(payload, item),
         mode: baseMode,
         type: baseType,
         brouillon: { required: true },
@@ -1016,12 +1035,15 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
       ...item,
       title: resolvedTitle,
       description: payload.description || item.description || '',
+      ...buildContentMetadata(payload, item),
       quiz_metadata: {
         ...(item.quiz_metadata || {}),
         chapter_num: resolvedChapterNumber,
         chapter_title: resolvedChapterTitle,
         quiz_title: resolvedTitle,
         description: payload.description || item.quiz_metadata?.description || '',
+        difficulty: resolveContentDifficulty(payload.difficulty || item.quiz_metadata?.difficulty || item.difficulty),
+        objectiveGroup: resolveObjectiveGroup(payload.objectiveGroup || item.quiz_metadata?.objectiveGroup || item.objectiveGroup),
       },
       modeConfigs: {
         suggestion: { ...(item.modeConfigs?.suggestion || {}) },
@@ -1156,6 +1178,8 @@ function buildCompositeExportFiles(item, chapterNumber, chapterTitle, baseKind) 
         title: item.title,
         chapterNumber,
         chapterTitle,
+        difficulty: resolveContentDifficulty(item.difficulty),
+        objectiveGroup: resolveObjectiveGroup(item.objectiveGroup),
         enonce: item.enonce,
         translations: item.translations,
       },
@@ -1177,6 +1201,8 @@ function buildCompositeExportFiles(item, chapterNumber, chapterTitle, baseKind) 
         title: item.title,
         chapterNumber,
         chapterTitle,
+        difficulty: resolveContentDifficulty(item.difficulty),
+        objectiveGroup: resolveObjectiveGroup(item.objectiveGroup),
         questions: brouillonQuestions,
       },
     });
@@ -1190,6 +1216,8 @@ function buildCompositeExportFiles(item, chapterNumber, chapterTitle, baseKind) 
         title: item.title,
         chapterNumber,
         chapterTitle,
+        difficulty: resolveContentDifficulty(item.difficulty),
+        objectiveGroup: resolveObjectiveGroup(item.objectiveGroup),
         timeLimitSeconds: item.traitement.timeLimitSeconds || 3600,
         initialScore: item.traitement.initialScore || 20,
         scoring: item.traitement.scoring || {},
@@ -1210,6 +1238,8 @@ function buildQuestionExportFile(item, chapterNumber, chapterTitle, baseKind, qu
       title: item.title,
       chapterNumber,
       chapterTitle,
+      difficulty: resolveContentDifficulty(item.difficulty),
+      objectiveGroup: resolveObjectiveGroup(item.objectiveGroup),
       question: clone(question),
     },
   };
@@ -1255,6 +1285,8 @@ export function exportAdminItemFiles(itemRecord, contentType, mentionVariant = '
           title: itemRecord.title,
           chapterNumber: itemRecord.chapterNumber,
           chapterTitle: itemRecord.chapterTitle,
+          difficulty: resolveContentDifficulty(itemRecord.data?.difficulty || itemRecord.data?.quiz_metadata?.difficulty),
+          objectiveGroup: resolveObjectiveGroup(itemRecord.data?.objectiveGroup || itemRecord.data?.quiz_metadata?.objectiveGroup),
           timing: itemRecord.data.modeConfigs?.[mode]?.timing || {},
           scoring: itemRecord.data.modeConfigs?.[mode]?.scoring || {},
           questions,

@@ -41,6 +41,7 @@ import {
   listSupabaseProfiles,
   listSupabaseProfilesWithPayload,
   pullProfileFromSupabase,
+  reassignSupabaseProfilesClass,
   pushProfileToSupabase,
   setSharedContentRegistry,
   setSharedAdminRegistry,
@@ -2237,6 +2238,31 @@ export function AppProvider({ children }) {
     }
   }, [buildPersistableState, data, persistLocal, refreshAdminCloudDirectory, refreshCloudState]);
 
+  const reassignCloudAccountToClass = useCallback(async (remoteUserId, className) => {
+    if (!data) throw new Error('Données non chargées');
+    if (!isSupabaseConfigured()) throw new Error('Supabase non configuré');
+    const adminState = normalizeAdminState(data.admin);
+    if (adminState.sessionScope !== 'admin') throw new Error('Connectez-vous d’abord comme administrateur');
+
+    const targetRemoteUserId = (remoteUserId || '').toString().trim();
+    const targetClassName = normalizeClassName(className, '');
+    if (!targetRemoteUserId) throw new Error('Compte cloud introuvable');
+    if (!targetClassName) throw new Error('Classe cible introuvable');
+
+    setCloudState((prev) => ({ ...prev, busy: true, error: '', knownAccountsError: '' }));
+    try {
+      const updated = await reassignSupabaseProfilesClass(targetRemoteUserId, targetClassName);
+      await refreshCloudState();
+      await refreshAdminCloudDirectory();
+      return updated;
+    } catch (error) {
+      setCloudState((prev) => ({ ...prev, error: error?.message || 'Impossible d’assigner la classe en ligne' }));
+      throw error;
+    } finally {
+      setCloudState((prev) => ({ ...prev, busy: false }));
+    }
+  }, [data, refreshAdminCloudDirectory, refreshCloudState]);
+
   const inspectCloudAccount = useCallback(async (remoteUserId) => {
     if (!data) throw new Error('Données non chargées');
     if (!isSupabaseConfigured()) throw new Error('Supabase non configuré');
@@ -2655,6 +2681,7 @@ export function AppProvider({ children }) {
     resetCurrentUserCloudProfiles,
     resetCloudProfilesForRemoteUser,
     inspectCloudAccount,
+    reassignCloudAccountToClass,
     signInAdminWithGoogle,
     signOutAdminCloud,
     releaseAdminAccess: () => signOutAdminCloud({ clearOwnership: true }),

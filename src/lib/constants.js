@@ -33,6 +33,25 @@ export const PARCOURS = [
   { id: 'mention_tres_bien', label: 'Mention Très Bien', minScore: 16 },
 ];
 
+export const DEFAULT_OBJECTIVE_GROUP_ID = 'objectif_mention_tres_bien';
+
+export const CONTENT_OBJECTIVE_GROUPS = [
+  { id: DEFAULT_OBJECTIVE_GROUP_ID, label: 'Objectif mention très bien' },
+  { id: 'objectif_mention_restreinte', label: 'Objectif mention restreinte' },
+];
+
+export const DEFAULT_CONTENT_DIFFICULTY = 'tres_bien';
+
+export const CONTENT_DIFFICULTY_LEVELS = [
+  { id: 'debutant', label: 'Débutant', shortLabel: 'D' },
+  { id: 'faible', label: 'Faible', shortLabel: 'F' },
+  { id: 'moyen', label: 'Moyen', shortLabel: 'M' },
+  { id: 'assez_bien', label: 'Assez bien', shortLabel: 'AB' },
+  { id: 'bien', label: 'Bien', shortLabel: 'B' },
+  { id: 'tres_bien', label: 'Très bien', shortLabel: 'TB' },
+  { id: 'parfait', label: 'Parfait', shortLabel: 'P' },
+];
+
 export const QUIZ_TYPES = ['mcq', 'input', 'trap', 'logic-sorter', 'redaction', 'block-input'];
 
 export const SCORE_CONFIG = {
@@ -87,7 +106,7 @@ export const DEFAULT_SYNC_SETTINGS = {
   lastSyncedAt: '',
   lastSyncStatus: 'idle',
   pendingLocalChanges: false,
-  conflictStrategy: 'local-first',
+  conflictStrategy: 'online-first',
 };
 
 export const DEFAULT_USER = {
@@ -180,6 +199,8 @@ export function createSubjectShell(subject = {}) {
     name: subject.name || 'Nouvelle matière',
     icon: subject.icon || 'book-open',
     color: subject.color || '#8b5cf6',
+    objectiveGroup: subject.objectiveGroup || DEFAULT_OBJECTIVE_GROUP_ID,
+    defaultDifficulty: subject.defaultDifficulty || DEFAULT_CONTENT_DIFFICULTY,
     chapters: Array.isArray(subject.chapters) ? subject.chapters : [],
     scoreScale: [80, 100].includes(Number(subject.scoreScale)) ? Number(subject.scoreScale) : 100,
     coefficient: Math.max(1, Math.round(Number(subject.coefficient) || 1)),

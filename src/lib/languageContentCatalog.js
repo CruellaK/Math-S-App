@@ -7,6 +7,9 @@ function slugify(value) {
     .replace(/^-+|-+$/g, '');
 }
 
+const DEFAULT_GENERATED_OBJECTIVE_GROUP = 'objectif_mention_tres_bien';
+const DEFAULT_GENERATED_DIFFICULTY = 'tres_bien';
+
 function unique(items = []) {
   return [...new Set((items || []).map((item) => String(item || '').trim()).filter(Boolean))];
 }
@@ -221,6 +224,8 @@ function buildQuizFilesForItem(chapter, item, subjectCoefficient = 1) {
       chapterDescription: chapter.description || '',
       title: item.title,
       description: item.description || '',
+      difficulty: item.difficulty || chapter.difficulty || DEFAULT_GENERATED_DIFFICULTY,
+      objectiveGroup: item.objectiveGroup || chapter.objectiveGroup || DEFAULT_GENERATED_OBJECTIVE_GROUP,
       timing: modeTimings[mode],
       scoring: modeScorings[mode],
       questions: builder(item.cases),
@@ -469,6 +474,8 @@ function buildExerciseFiles(chapter, exercise, subjectCoefficient = 1) {
         chapterNumber: chapter.number,
         chapterTitle: chapter.title,
         title: exercise.title,
+        difficulty: exercise.difficulty || chapter.difficulty || DEFAULT_GENERATED_DIFFICULTY,
+        objectiveGroup: exercise.objectiveGroup || chapter.objectiveGroup || DEFAULT_GENERATED_OBJECTIVE_GROUP,
         enonce,
       },
     },
@@ -480,6 +487,8 @@ function buildExerciseFiles(chapter, exercise, subjectCoefficient = 1) {
         chapterNumber: chapter.number,
         chapterTitle: chapter.title,
         title: exercise.title,
+        difficulty: exercise.difficulty || chapter.difficulty || DEFAULT_GENERATED_DIFFICULTY,
+        objectiveGroup: exercise.objectiveGroup || chapter.objectiveGroup || DEFAULT_GENERATED_OBJECTIVE_GROUP,
         questions: brouillonQuestions,
       },
     },
@@ -491,6 +500,8 @@ function buildExerciseFiles(chapter, exercise, subjectCoefficient = 1) {
         chapterNumber: chapter.number,
         chapterTitle: chapter.title,
         title: exercise.title,
+        difficulty: exercise.difficulty || chapter.difficulty || DEFAULT_GENERATED_DIFFICULTY,
+        objectiveGroup: exercise.objectiveGroup || chapter.objectiveGroup || DEFAULT_GENERATED_OBJECTIVE_GROUP,
         timeLimitSeconds: exercise.timeLimitSeconds || 10800,
         initialScore: exercise.initialScore || Math.max(24, traitementQuestions.length * 2),
         timing: {
@@ -5951,6 +5962,56 @@ const HISTORY_GEO_QUIZ_CHAPTERS = [
   },
 ];
 
+const HISTORY_GEO_MASSIVE_COMPETENCIES = [
+  { title: 'repères chronologiques', focus: 'Vérifiez la date, la phase ou le moment-clé.', outcome: 'Ce niveau sécurise les repères indispensables.', difficulty: 'bien' },
+  { title: 'acteurs et organisations', focus: 'Identifiez précisément les acteurs, institutions ou groupes concernés.', outcome: 'Ce niveau évite les confusions d’acteurs.', difficulty: 'bien' },
+  { title: 'causes profondes', focus: 'Distinguez causes structurelles et déclencheurs.', outcome: 'Ce niveau prépare les introductions argumentées.', difficulty: 'tres_bien' },
+  { title: 'conséquences politiques', focus: 'Reliez l’événement à ses effets institutionnels ou géopolitiques.', outcome: 'Ce niveau renforce la maîtrise des bilans.', difficulty: 'tres_bien' },
+  { title: 'notions du programme', focus: 'Définissez la notion sans récitation vague.', outcome: 'Ce niveau consolide le vocabulaire d’examen.', difficulty: 'tres_bien' },
+  { title: 'comparaison raisonnée', focus: 'Comparez les espaces, périodes ou modèles sans les confondre.', outcome: 'Ce niveau prépare les plans comparatifs.', difficulty: 'tres_bien' },
+  { title: 'étude de document', focus: 'Transformez une information en preuve utilisable.', outcome: 'Ce niveau entraîne à justifier avec précision.', difficulty: 'parfait' },
+  { title: 'composition Bac', focus: 'Reliez idée, exemple et conclusion partielle.', outcome: 'Ce niveau prépare une rédaction de très haut niveau.', difficulty: 'parfait' },
+  { title: 'pièges classiques', focus: 'Repérez les inversions de chronologie et les généralisations abusives.', outcome: 'Ce niveau réduit les erreurs pénalisantes.', difficulty: 'parfait' },
+  { title: 'synthèse mention très bien', focus: 'Hiérarchisez les informations utiles pour conclure.', outcome: 'Ce niveau vise une réponse complète, nuancée et exacte.', difficulty: 'parfait' },
+];
+
+function buildHistoryGeoMassiveQuizItems(chapter) {
+  return HISTORY_GEO_MASSIVE_COMPETENCIES.map((competency, competencyIndex) => ({
+    title: `Maîtrise ${competencyIndex + 1} — ${competency.title}`,
+    description: `Série intensive pour maîtriser ${chapter.title} : ${competency.focus}`,
+    difficulty: competency.difficulty,
+    cases: (chapter.quizItems || []).flatMap((item, itemIndex) => {
+      const sourceCases = Array.isArray(item.cases) && item.cases.length ? item.cases : [];
+      return [0, 1, 2, 3].map((offset) => {
+        const source = sourceCases[(competencyIndex + offset) % sourceCases.length] || sourceCases[0];
+        const answer = source?.answer || 'notion essentielle';
+        const options = unique([answer, ...(source?.blockOptions || []), 'confusion chronologique', 'réponse vague']).slice(0, 4);
+        return hq(
+          `${competency.focus} Thème : ${item.title}.`,
+          `${competency.title} : ${source?.correct || item.description || chapter.description}`,
+          [
+            `${competency.title} : ${source?.wrongs?.[0] || 'affirmation vague et non justifiée'}`,
+            `${competency.title} : ${source?.wrongs?.[1] || 'chronologie inversée'}`,
+            `${competency.title} : ${source?.wrongs?.[2] || 'acteur mal identifié'}`,
+          ],
+          answer,
+          options,
+          `${competency.focus} ${source?.hint || chapter.description}`,
+          `${source?.explanation || item.description} ${competency.outcome}`
+        );
+      });
+    }),
+  }));
+}
+
+const MASSIVE_HISTORY_GEO_QUIZ_CHAPTERS = HISTORY_GEO_QUIZ_CHAPTERS.map((chapter) => ({
+  ...chapter,
+  quizItems: [
+    ...(chapter.quizItems || []),
+    ...buildHistoryGeoMassiveQuizItems(chapter),
+  ],
+}));
+
 function createHistoryGeoQuestion(question, steps, answers, hint, explanation) {
   const distractors = ['réponse sans date', 'confusion de chapitre', 'acteur mal identifié', 'cause unique', 'conclusion non justifiée', 'chronologie inversée'];
   return createMathQuestion(question, steps, answers, distractors, hint, explanation);
@@ -5992,20 +6053,20 @@ function buildHistoryGeoExerciseFromChapter(chapter, index, variant = 'exercice'
 }
 
 function buildHistoryGeoExercises() {
-  return HISTORY_GEO_QUIZ_CHAPTERS.flatMap((chapter) => [0, 1, 2].map((index) => ({
+  return MASSIVE_HISTORY_GEO_QUIZ_CHAPTERS.flatMap((chapter) => [0, 1, 2].map((index) => ({
     chapterNumber: chapter.number,
     ...buildHistoryGeoExerciseFromChapter(chapter, index, 'exercice'),
   })));
 }
 
 function buildHistoryGeoSujetTypes() {
-  return HISTORY_GEO_QUIZ_CHAPTERS.map((chapter) => ({
+  return MASSIVE_HISTORY_GEO_QUIZ_CHAPTERS.map((chapter) => ({
     chapterNumber: chapter.number,
     ...buildHistoryGeoExerciseFromChapter(chapter, 1, 'sujet-type'),
   }));
 }
 
-const HISTORY_GEO_CHAPTERS = attachExercises(HISTORY_GEO_QUIZ_CHAPTERS, buildHistoryGeoExercises()).map((chapter) => ({
+const HISTORY_GEO_CHAPTERS = attachExercises(MASSIVE_HISTORY_GEO_QUIZ_CHAPTERS, buildHistoryGeoExercises()).map((chapter) => ({
   ...chapter,
   sujetTypes: buildHistoryGeoSujetTypes().filter((item) => item.chapterNumber === chapter.number),
 }));

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { getQuizModeQuestions, getQuizSessionTitle } from '../lib/quizModes';
+import { CONTENT_DIFFICULTY_LEVELS, DEFAULT_CONTENT_DIFFICULTY } from '../lib/constants';
 import {
   countPlayableCompositeQuestions,
   countPlayableQuizModes,
@@ -67,6 +68,26 @@ function getVisibleChapters(subject) {
 
 function formatContentCount(count, singularLabel, pluralLabel = `${singularLabel}s`) {
   return `${count} ${count === 1 ? singularLabel : pluralLabel}`;
+}
+
+function getDifficultyMeta(item = {}) {
+  const difficulty = item.difficulty || item.quiz_metadata?.difficulty || DEFAULT_CONTENT_DIFFICULTY;
+  return CONTENT_DIFFICULTY_LEVELS.find((entry) => entry.id === difficulty) || CONTENT_DIFFICULTY_LEVELS.find((entry) => entry.id === DEFAULT_CONTENT_DIFFICULTY);
+}
+
+function DifficultyTag({ item }) {
+  const meta = getDifficultyMeta(item);
+  if (!meta) return null;
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary-dark text-[10px] font-extrabold">
+      <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 1.5 14 5v6L8 14.5 2 11V5L8 1.5Z" fill="currentColor" opacity="0.18" />
+        <path d="M8 2.6 13 5.5v5L8 13.4 3 10.5v-5L8 2.6Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M5.2 8.4 7.1 10.2 11 5.9" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {meta.label}
+    </span>
+  );
 }
 
 function getChapterContentSummary(chapter, chapterIndex) {
@@ -551,6 +572,7 @@ export default function ChapterView() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-semibold text-xs">{item.quiz_metadata?.quiz_title || item.title || `${activeGroup.label} ${itemIndex + 1}`}</p>
                               <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${activeGroup.chipClass}`}>{itemQuestionCount} question{itemQuestionCount !== 1 ? 's' : ''}</span>
+                              <DifficultyTag item={item} />
                             </div>
                             <p className="text-[10px] text-txt-muted mt-1">
                               {activeGroup.id === 'quiz'

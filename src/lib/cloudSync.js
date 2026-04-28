@@ -330,6 +330,47 @@ export async function listSupabaseAccounts() {
   });
 }
 
+export async function reassignSupabaseProfilesClass(remoteUserId, className) {
+  const client = getSupabaseClient();
+  const targetRemoteUserId = (remoteUserId || '').toString().trim();
+  const targetClassName = (className || '').toString().trim();
+  if (!client) throw new Error('Supabase non configuré');
+  if (!targetRemoteUserId) throw new Error('Utilisateur distant introuvable');
+  if (!targetClassName) throw new Error('Classe cible introuvable');
+
+  const { data: rows, error: fetchError } = await client
+    .from(SUPABASE_PROFILES_TABLE)
+    .select('*')
+    .eq('remote_user_id', targetRemoteUserId);
+  if (fetchError) throw new Error(translateSupabaseError(fetchError));
+
+  const updates = (Array.isArray(rows) ? rows : []).filter((row) => {
+    const profileId = (row?.profile_id || '').toString();
+    return profileId !== SHARED_ADMIN_PROFILE_ID && profileId !== SHARED_CONTENT_PROFILE_ID;
+  });
+
+  for (const row of updates) {
+    const nextPayload = row?.payload && typeof row.payload === 'object' ? { ...row.payload } : {};
+    const nextUser = nextPayload.user && typeof nextPayload.user === 'object' ? { ...nextPayload.user } : {};
+    nextUser.selectedClass = targetClassName;
+    const nextSettings = nextPayload.settings && typeof nextPayload.settings === 'object' ? { ...nextPayload.settings } : {};
+    nextSettings.selectedClass = targetClassName;
+    nextPayload.user = nextUser;
+    nextPayload.settings = nextSettings;
+    const { error: updateError } = await client
+      .from(SUPABASE_PROFILES_TABLE)
+      .update({
+        selected_class: targetClassName,
+        payload: nextPayload,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('remote_user_id', targetRemoteUserId)
+      .eq('profile_id', row.profile_id);
+    if (updateError) throw new Error(translateSupabaseError(updateError));
+  }
+  return updates.length;
+}
+
 export async function deleteSupabaseProfiles(remoteUserId) {
   const client = getSupabaseClient();
   const targetRemoteUserId = (remoteUserId || '').toString().trim();

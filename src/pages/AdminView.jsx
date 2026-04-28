@@ -1,7 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { storage } from '../lib/store';
-import { CLASSES, createDefaultClassDefaults, createDefaultTimingDefaults, createSubjectShell, normalizeClassName, SUBJECT_ICON_OPTIONS } from '../lib/constants';
+import {
+  CLASSES,
+  CONTENT_DIFFICULTY_LEVELS,
+  CONTENT_OBJECTIVE_GROUPS,
+  DEFAULT_CONTENT_DIFFICULTY,
+  DEFAULT_OBJECTIVE_GROUP_ID,
+  createDefaultClassDefaults,
+  createDefaultTimingDefaults,
+  createSubjectShell,
+  normalizeClassName,
+  SUBJECT_ICON_OPTIONS,
+} from '../lib/constants';
 import { computeSubjectAccess } from '../lib/subjectAccess';
 import {
   applyAdminImportToSubject,
@@ -171,10 +182,34 @@ function GoogleIcon({ size = 18, className = '' }) {
   );
 }
 
+function ContentMetaChips({ item }) {
+  const difficulty = item?.difficulty || item?.quiz_metadata?.difficulty || DEFAULT_CONTENT_DIFFICULTY;
+  const difficultyMeta = CONTENT_DIFFICULTY_LEVELS.find((entry) => entry.id === difficulty)
+    || CONTENT_DIFFICULTY_LEVELS.find((entry) => entry.id === DEFAULT_CONTENT_DIFFICULTY);
+  const objectiveGroup = item?.objectiveGroup || item?.quiz_metadata?.objectiveGroup || DEFAULT_OBJECTIVE_GROUP_ID;
+  const objectiveMeta = CONTENT_OBJECTIVE_GROUPS.find((entry) => entry.id === objectiveGroup) || CONTENT_OBJECTIVE_GROUPS[0];
+  return (
+    <>
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary-dark">
+        <svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 1.5 14 5v6L8 14.5 2 11V5L8 1.5Z" fill="currentColor" opacity="0.18" />
+          <path d="M8 2.6 13 5.5v5L8 13.4 3 10.5v-5L8 2.6Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M5.2 8.4 7.1 10.2 11 5.9" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {difficultyMeta?.label || 'Très bien'}
+      </span>
+      <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-accent-purple/10 text-accent-purple">
+        {objectiveMeta?.label || 'Objectif mention très bien'}
+      </span>
+    </>
+  );
+}
+
 function SubjectStatusChips({ contentType, item }) {
   if (contentType === 'quiz') {
     return (
       <div className="flex flex-wrap gap-2 mt-2">
+        <ContentMetaChips item={item} />
         <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasSuggestion ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Suggestion</span>
         <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasInput ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Input</span>
         <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasTrap ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Pièges</span>
@@ -187,6 +222,7 @@ function SubjectStatusChips({ contentType, item }) {
   if (contentType === 'parcours') {
     return (
       <div className="flex flex-wrap gap-2 mt-2">
+        <ContentMetaChips item={item} />
         <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary-dark">Leçon validée</span>
       </div>
     );
@@ -194,6 +230,7 @@ function SubjectStatusChips({ contentType, item }) {
 
   return (
     <div className="flex flex-wrap gap-2 mt-2">
+      <ContentMetaChips item={item} />
       <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasEnonce ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Sujet</span>
       <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasBrouillon ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Brouillon</span>
       <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.hasTraitement ? 'bg-accent-green/10 text-accent-green' : 'bg-gray-100 text-txt-muted'}`}>Traitement</span>
@@ -467,6 +504,7 @@ export default function AdminView() {
     resetCloudProfilesForRemoteUser,
     refreshAdminCloudDirectory,
     inspectCloudAccount,
+    reassignCloudAccountToClass,
   } = useApp();
   const [activeTab, setActiveTab] = useState('content');
   const [copiedPrompt, setCopiedPrompt] = useState('');
@@ -490,6 +528,7 @@ export default function AdminView() {
   const [newSubjectName, setNewSubjectName] = useState('');
   const [newSubjectIcon, setNewSubjectIcon] = useState(SUBJECT_ICON_OPTIONS[3]?.value || 'book-open');
   const [newSubjectColor, setNewSubjectColor] = useState('#8b5cf6');
+  const [newSubjectGroup, setNewSubjectGroup] = useState(DEFAULT_OBJECTIVE_GROUP_ID);
   const [selectedChapterNumber, setSelectedChapterNumber] = useState('');
   const [selectedItemId, setSelectedItemId] = useState('');
   const [newChapterTitle, setNewChapterTitle] = useState('');
@@ -1620,6 +1659,7 @@ export default function AdminView() {
       icon: newSubjectIcon,
       color: newSubjectColor || '#8b5cf6',
       coefficient: 1,
+      objectiveGroup: newSubjectGroup || DEFAULT_OBJECTIVE_GROUP_ID,
       timingDefaults: createDefaultTimingDefaults(),
     });
     await persistBucketForClass([...classSubjects, nextSubject], `Matière ${name} créée`, nextId);
@@ -1879,6 +1919,9 @@ export default function AdminView() {
           </button>
         </div>
         <p className="text-[11px] text-txt-sub">Accès sécurisé · contenus partagés pour tous les utilisateurs · validation JSON avant enregistrement</p>
+        <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 font-semibold">
+          ⚠ Les contenus, JSON, matières, classes et comptes sauvegardés en ligne (Netlify / Supabase) priment sur les modifications locales. Toute modification effectuée ici sera <strong>temporaire</strong> tant qu’elle n’est pas publiée vers le cloud, et sera écrasée au prochain rafraîchissement par les données partagées en ligne.
+        </div>
       </header>
 
       <div className="px-4 flex gap-2 mb-3">
@@ -1978,6 +2021,19 @@ export default function AdminView() {
                     onChange={(event) => setNewSubjectColor(event.target.value)}
                     className="h-12 w-full rounded-xl border border-gray-200 bg-white px-2 py-2"
                   />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-txt-sub block mb-1">Groupe d’objectif</label>
+                  <select
+                    value={newSubjectGroup}
+                    onChange={(event) => setNewSubjectGroup(event.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold focus:outline-none focus:border-primary/40"
+                  >
+                    {CONTENT_OBJECTIVE_GROUPS.map((group) => (
+                      <option key={group.id} value={group.id}>{group.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-txt-muted mt-1">Le groupe regroupe les contenus par objectif (mention très bien par défaut, mention restreinte pour les contenus alignés strictement sur un programme officiel).</p>
                 </div>
                 <button onClick={handleCreateSubject} className="w-full py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-gold active:scale-95 transition-transform">
                   Créer la matière
@@ -2666,13 +2722,27 @@ export default function AdminView() {
                               <p className="text-[10px] text-txt-muted mt-1">{account.profileCount} profil(s) · {account.selectedClasses?.join(', ') || 'Classe inconnue'}</p>
                               <p className="text-[10px] text-txt-muted">Dernière activité : {account.lastUpdatedAt ? new Date(account.lastUpdatedAt).toLocaleString() : 'inconnue'}</p>
                             </div>
-                            <button
-                              onClick={() => handleToggleCloudAccountDetails(account)}
-                              disabled={adminActionLoading || adminStatus?.busy || !isAdminOwnerSession}
-                              className="px-3 py-2 rounded-xl bg-primary/10 text-primary-dark text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                            >
-                              <FileText size={14} className="inline mr-1" /> {isExpanded ? 'Masquer' : 'Voir profils'}
-                            </button>
+                            <div className="flex flex-col gap-2 shrink-0">
+                              <button
+                                onClick={() => handleToggleCloudAccountDetails(account)}
+                                disabled={adminActionLoading || adminStatus?.busy || !isAdminOwnerSession}
+                                className="px-3 py-2 rounded-xl bg-primary/10 text-primary-dark text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                <FileText size={14} className="inline mr-1" /> {isExpanded ? 'Masquer' : 'Voir profils'}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!isAdminOwnerSession) return;
+                                  await runAdminAction(async () => {
+                                    await reassignCloudAccountToClass(account.remoteUserId, selectedClass);
+                                  }, `Compte assigné à ${selectedClass}`);
+                                }}
+                                disabled={adminActionLoading || adminStatus?.busy || !isAdminOwnerSession}
+                                className="px-3 py-2 rounded-xl bg-accent-blue/10 text-accent-blue text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                <Users size={14} className="inline mr-1" /> Assigner ici
+                              </button>
+                            </div>
                           </div>
                           {isExpanded ? (
                             <div className="rounded-2xl bg-white border border-primary/10 p-3 space-y-2">
