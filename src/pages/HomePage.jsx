@@ -1,16 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { hasPlayableCompositeContent, hasPlayableQuizContent } from '../lib/contentVisibility';
+import { computeSubjectAccess, sortSubjectsByAccess } from '../lib/subjectAccess';
 import {
   Calculator, Atom, Leaf, BookOpen, Globe, Map, Flag, Dumbbell,
   ChevronRight, Search, GraduationCap, TrendingUp, Trophy, Zap, Star, Lock
 } from 'lucide-react';
-
-function isSubjectBlocked(blockedIds, subject) {
-  if (!Array.isArray(blockedIds) || !blockedIds.length) return false;
-  const id = String(subject?.id || '');
-  return blockedIds.includes(id) || blockedIds.includes(`id:${id}`);
-}
 
 const ICON_MAP = {
   calculator: Calculator, atom: Atom, leaf: Leaf, 'book-open': BookOpen,
@@ -84,10 +79,14 @@ export default function HomePage({ tab }) {
   const xpInLevel = (user.xp || 0) % 500;
   const lockedSubjects = !isStudentGoogleSignedIn;
 
+  const classDefaults = data?.classDefaults || {};
+
+  // Tri : matières débloquées en haut, bloquées en bas. Puis filtre par recherche.
   const filteredSubjects = useMemo(() => {
-    if (!search) return subjects;
-    return subjects.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
-  }, [subjects, search]);
+    const sorted = sortSubjectsByAccess(subjects, user, classDefaults);
+    if (!search) return sorted;
+    return sorted.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+  }, [subjects, search, user, classDefaults]);
 
   if (activeTab === 'subjects') {
     return (
@@ -130,13 +129,17 @@ export default function HomePage({ tab }) {
                 const Icon = ICON_MAP[subject.icon] || BookOpen;
                 const chapCount = getVisibleChapters(subject).length;
                 const contentSummary = getSubjectContentSummary(subject);
-                const blocked = isSubjectBlocked(user.blockedSubjectIds, subject);
+                const access = computeSubjectAccess({ subject, user, classDefaults });
+                const blocked = access.blocked;
                 if (blocked) {
+                  const reason = access.source === 'class-default'
+                    ? `Matière bloquée par défaut pour ${user.selectedClass || 'cette classe'}`
+                    : 'Matière bloquée par l’administrateur';
                   return (
                     <div
                       key={subject.id}
                       aria-disabled="true"
-                      title="Matière bloquée par l’administrateur"
+                      title={reason}
                       className="w-full flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-gray-100 shadow-card animate-fade-in-up cursor-not-allowed select-none"
                       style={{ animationDelay: `${idx * 40}ms` }}
                     >
@@ -145,7 +148,7 @@ export default function HomePage({ tab }) {
                       </div>
                       <div className="flex-1 text-left">
                         <h3 className="font-bold text-sm blur-[5px] select-none">{subject.name}</h3>
-                        <p className="text-[11px] text-txt-sub mt-1 flex items-center gap-1"><Lock size={11} className="text-accent-red" /> Matière bloquée par l’admin</p>
+                        <p className="text-[11px] text-txt-sub mt-1 flex items-center gap-1"><Lock size={11} className="text-accent-red" /> {reason}</p>
                       </div>
                       <Lock size={18} className="text-accent-red" />
                     </div>
@@ -279,9 +282,9 @@ export default function HomePage({ tab }) {
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2">
-              {subjects.slice(0, 8).map(s => {
+              {sortSubjectsByAccess(subjects, user, classDefaults).slice(0, 8).map(s => {
                 const Icon = ICON_MAP[s.icon] || BookOpen;
-                const blocked = isSubjectBlocked(user.blockedSubjectIds, s);
+                const blocked = computeSubjectAccess({ subject: s, user, classDefaults }).blocked;
                 if (blocked) {
                   return (
                     <div key={s.id}

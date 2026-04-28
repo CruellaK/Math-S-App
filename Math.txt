@@ -1,0 +1,4638 @@
+Premiere partie
+Chapitre 1 : Fonction logarithme népérien
+A. Domaine de définition D 
+f
+​
+ 
+Soit f(x)=ln(A(x)) D 
+f
+​
+ ={x∈R∣A(x)>0}
+Exemple 1 : Soit f(x)=2xln(x−1) D 
+f
+​
+ ={x∈R∣x−1>0} x−1=0⟹x>1 D 
+f
+​
+ =]1,+∞[
+Exemple 2 : Soit f(x)=ln(−x+2)−ln(x−1) D 
+f
+​
+ ={x∈R∣(−x+2)>0 et (x−1)>0} Or, −x+2>0⟹−x>−2⟹x<2 Et, x−1>0⟹x>1 D 
+f
+​
+ =]1,2[
+Exemple 3 : Soit f(x)=ln( 
+−x+2
+x−3
+​
+ ) Il faut que ∀x∈R,  
+−x+2
+x−3
+​
+ >0 et −x+2
+
+=0⟹x
+
+=2.
+Tableau de signes :
+x
+−∞
+2
+3
++∞
+x−3
+−
+−
+0
++
+−x+2
++
+0
+−
+−
+Quotient
+−
+∣
++
+0
+Donc, D 
+f
+​
+ =]2,3[
+B. Limites classiques (usuelles)
+lim 
+x→0 
++
+ 
+​
+ lnx=−∞
+lim 
+x→+∞
+​
+ lnx=+∞
+lim 
+x→+∞
+​
+  
+x 
+n
+ 
+lnx
+​
+ =0
+lim 
+x→0 
++
+ 
+​
+ x 
+n
+ lnx=0
+lim 
+x→1
+​
+  
+x−1
+lnx
+​
+ =1
+lim 
+x→0
+​
+  
+x
+ln(x+1)
+​
+ =1
+Exemple : Soit f(x)= 
+lnx
+1
+​
+  D 
+f
+​
+ ={x∈R∣x>0 et lnx
+
+=0⟹x
+
+=1} D 
+f
+​
+ =]0,1[∪]1,+∞[
+lim 
+x→0 
++
+ 
+​
+ f(x)=lim 
+x→0 
++
+ 
+​
+  
+lnx
+1
+​
+ = 
+−∞
+1
+​
+ =0
+lim 
+x→+∞
+​
+ f(x)=lim 
+x→+∞
+​
+  
+lnx
+1
+​
+ = 
++∞
+1
+​
+ =0
+lim 
+x→1 
+−
+ 
+​
+ f(x)= 
+0 
+−
+ 
+1
+​
+ =−∞
+lim 
+x→1 
++
+ 
+​
+ f(x)= 
+0 
++
+ 
+1
+​
+ =+∞
+C. Dérivée
+Soit f(u)=ln∣u∣
+f 
+′
+ (u)= 
+u
+u 
+′
+ 
+​
+ 
+Exemple 1 : Soit f(x)=ln(−x+2)−ln(x)
+f 
+′
+ (x)= 
+−x+2
+−1
+​
+ − 
+x
+1
+​
+ 
+f 
+′
+ (x)= 
+x(−x+2)
+−x−(−x+2)
+​
+ 
+f 
+′
+ (x)= 
+x(−x+2)
+−x+x−2
+​
+ 
+f 
+′
+ (x)= 
+x(−x+2)
+−2
+​
+ 
+Exemple 2 : Soit f(x)=2xlnx Posons u=2x⟹u 
+′
+ =2 Posons v=lnx⟹v 
+′
+ = 
+x
+1
+​
+ 
+f 
+′
+ (x)=u 
+′
+ v+uv 
+′
+ =2lnx+2x( 
+x
+1
+​
+ )
+f 
+′
+ (x)=2lnx+2=2(lnx+1)
+D. Propriétés
+ln( 
+b
+a
+​
+ )=lna−lnb
+ln(a×b)=lna+lnb
+ln(a 
+n
+ )=nlna
+ln(1)=0
+ln( 
+a
+1
+​
+ )=−lna
+ln(e 
+x
+ )=x(∀x∈R)
+e 
+lnx
+ =x(∀x∈R 
++
+∗
+​
+ )
+ln( 
+a
+
+​
+ )= 
+2
+1
+​
+ lna
+ln(x 
+2
+ )
+
+=(lnx) 
+2
+ =ln 
+2
+ x
+--------------------------------------------------------------------------------
+Chapitre 2 : Analyse (Complément sur l'étude de f)
+1. Théorème des Valeurs Intermédiaires (TVI)
+Si f est continue sur [a,b] et que f(a)×f(b)<0, il existe un réel unique α∈]a,b[ tel que f(α)=0.
+Exemple (Bac 2018) : Soit g(x)=x 
+2
+ −2+lnx. Montrer que l'équation g(x)=0 admet une solution réelle unique α telle que α∈]1,2;1,4[.
+g(1,2)=(1,2) 
+2
+ −2+ln(1,2)=1,44−2+0,18=−0,38
+g(1,4)=(1,4) 
+2
+ −2+ln(1,4)=1,96−2+0,33=0,29
+Or g(1,2)×g(1,4)<0. Donc d'après le TVI, il existe une solution réelle unique α∈]1,2;1,4[.
+2. Fonction bijective
+Une fonction f est dite bijective, définie sur l'intervalle I et à valeurs dans J, si elle est continue et strictement monotone sur I.
+3. Fonction réciproque
+a. Théorème : Toute fonction f bijective dans I et à valeurs dans J admet une fonction réciproque notée f 
+−1
+ , définie dans J et à valeurs dans I.
+f:I→J, x↦f(x)=y
+f 
+−1
+ :J→I, y↦f 
+−1
+ (y)=x
+Cette fonction réciproque f 
+−1
+  est continue, strictement monotone, et varie dans le même sens que la fonction f.
+x
+I
+f 
+′
+ (x)
++
+f(x)
+↗
+x
+J
+(f 
+−1
+ ) 
+′
+ (x)
++
+f 
+−1
+ (x)
+↗
+b. Représentation graphique de la fonction réciproque : Soit f une fonction continue qui admet une fonction réciproque f 
+−1
+ . On note (C) et (C 
+′
+ ) les courbes représentatives respectives de f et f 
+−1
+ . Les courbes (C) et (C 
+′
+ ) sont symétriques par rapport à la droite d'équation y=x (la première bissectrice).
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D mathematical graph illustrating the geometric symmetry between a function and its reciprocal (inverse) function, specifically using exponential and logarithmic functions to match the student's notebook drawing.\nData State: The main curve (C) is the exponential function `f(x) = Math.exp(x)`. The reciprocal curve (C') is the natural logarithm `f^{-1}(x) = Math.log(x)`. The axis of symmetry is the line `y = x`.\nStrategy: Standard Layout using D3.js to render a Cartesian coordinate system.\nInputs: Include a control panel with three toggle checkboxes to independently show/hide: 1) The function C: f(x), 2) The reciprocal function C': f^{-1}(x), 3) The axis of symmetry y = x.\nVisuals/Behavior: Render a clean math graph with a grid. Set both X and Y axes domains from -3 to 5 to show the intersection and symmetry clearly. Plot `y = Math.exp(x)` smoothly in blue and label it (C). Plot `y = Math.log(x)` smoothly in green (ensure x starts from 0.01 to avoid -infinity) and label it (C'). Plot the symmetry line `y = x` as a dashed red line. Ensure high-contrast colors, clearly labeled axes, and smooth visual transitions when elements are toggled.","id":"im_5561657b41e0afd7"}}
+c. Fonction dérivée d'une fonction réciproque : Si f est une fonction dérivable en un point x 
+0
+​
+ , alors sa fonction réciproque f 
+−1
+  est dérivable en y 
+0
+​
+ =f(x 
+0
+​
+ ) telle que :
+(f 
+−1
+ ) 
+′
+ (y 
+0
+​
+ )= 
+f 
+′
+ (x 
+0
+​
+ )
+1
+​
+ 
+--------------------------------------------------------------------------------
+Chapitre 3 : Primitives et Intégrales (Calcul d'aire)
+I - Primitive
+a) Définition
+On dit que F est une primitive de f si et seulement si :
+F 
+′
+ (x)=f(x)
+b) Primitives usuelles
+Fonction f(x)
+Primitive F(x)
+a
+ax
+x 
+n
+ 
+n+1
+x 
+n+1
+ 
+​
+ 
+x
+1
+​
+ 
+$\ln
+2 
+x
+
+​
+ 
+1
+​
+ 
+x
+
+​
+ 
+sinx
+−cosx
+cosx
+sinx
+C - Formules générales
+∫u 
+′
+ u 
+n
+ = 
+n+1
+u 
+n+1
+ 
+​
+ 
+∫ 
+u
+u 
+′
+ 
+​
+ =ln∣u∣
+∫u 
+′
+ e 
+u
+ =e 
+u
+ 
+Exemples :
+∫2(2x+1) 
+4
+ dx= 
+5
+(2x+1) 
+5
+ 
+​
+  (Ici u=2x+1 et u 
+′
+ =2)
+∫ 
+−x+1
+−1
+​
+ dx=ln∣−x+1∣ (Ici u=−x+1 et u 
+′
+ =−1)
+Chapitre 4 : Probabilités (Introduction)
+Mercredi, 12 Décembre 2023
+1) Vocabulaire : Probabilité
+Épreuve : C'est une expérience dont on ne peut pas prévoir le résultat précis. L'ensemble de tous les résultats (ou éventualités) possibles est noté généralement Ω (univers de l'épreuve).
+Exemple : On lance un dé cubique dont les faces sont numérotées de 1 à 6. Ω={1,2,3,4,5,6} Card Ω=6
+Événement : C'est une partie de l'univers Ω. On note généralement un événement à l'aide d'une lettre majuscule.
+Intersection d'événements : Si A et B sont réalisés en même temps, on note l'intersection A∩B.
+--------------------------------------------------------------------------------
+Chapitre 3 : Intégration (Suite et Fin)
+d) Intégrale par parties (IPP)
+On part de la formule de dérivation d'un produit :
+(u×v) 
+′
+ =u 
+′
+ v+uv 
+′
+ 
+⟹∫(u×v) 
+′
+ =∫u 
+′
+ v+∫uv 
+′
+ 
+⟹[uv]=∫u 
+′
+ v+∫uv 
+′
+ 
+Ce qui nous donne la formule de l'IPP :
+∫u 
+′
+ v=[uv]−∫uv 
+′
+ 
+Exemple : Calculer I=∫ 
+1
+3
+​
+ x 
+2
+ lnxdx Posons :
+u 
+′
+ =x 
+2
+ ⟹u= 
+3
+x 
+3
+ 
+​
+ 
+v=lnx⟹v 
+′
+ = 
+x
+1
+​
+ 
+I=[ 
+3
+x 
+3
+ 
+​
+ lnx] 
+1
+3
+​
+ −∫ 
+1
+3
+​
+  
+3
+x 
+3
+ 
+​
+ × 
+x
+1
+​
+ dx
+I=[ 
+3
+x 
+3
+ 
+​
+ lnx] 
+1
+3
+​
+ −∫ 
+1
+3
+​
+  
+3
+x 
+2
+ 
+​
+ dx
+I=[ 
+3
+x 
+3
+ 
+​
+ lnx− 
+9
+x 
+3
+ 
+​
+ ] 
+1
+3
+​
+ 
+e) Intégrale définie
+Soient a et b∈R avec a<b.
+I=∫ 
+a
+b
+​
+ f(x)dx=[F(x)] 
+a
+b
+​
+ =F(b)−F(a)
+Exemple : Soit f(x)=2x(x 
+2
+ +1) 
+3
+ . Calculer I entre x=0 et x=1.
+I=∫ 
+0
+1
+​
+ 2x(x 
+2
+ +1) 
+3
+ dx=[ 
+4
+(x 
+2
+ +1) 
+4
+ 
+​
+ ] 
+0
+1
+​
+ 
+I= 
+4
+(1 
+2
+ +1) 
+4
+ 
+​
+ − 
+4
+(0 
+2
+ +1) 
+4
+ 
+​
+ = 
+4
+2 
+4
+ 
+​
+ − 
+4
+1 
+4
+ 
+​
+ = 
+4
+16
+​
+ − 
+4
+1
+​
+ = 
+4
+15
+​
+ 
+f) Calcul d'aire
+A=∫ 
+a
+b
+​
+ f(x)dx×u.a.
+On désigne par (C) la courbe représentative dans un repère orthonormé (O, 
+i
+
+ , 
+j
+
+​
+ ).
+Si l'unité est 1cm×1cm, alors 1 u.a.=1cm 
+2
+ .
+Si l'unité est 2cm×2cm, alors 1 u.a.=4cm 
+2
+ . Dans notre exemple précédent : A= 
+4
+15
+​
+  u.a. (unités d'aire).
+--------------------------------------------------------------------------------
+Chapitre 5 : Fonction Exponentielle
+Jeudi, 09 Octobre 2025
+I. Domaine de définition
+Soit f(x)=e 
+A(x)
+ 
+D 
+f
+​
+ ={x∈R∣A(x) existe}
+Exemple : Soit f(x)= 
+e 
+x
+ +2
+2e 
+x
+ −2
+​
+  D 
+f
+​
+ ={x∈R∣e 
+x
+ +2
+
+=0} Comme ∀x∈R,e 
+x
+ >0, alors e 
+x
+ +2>0 (le dénominateur ne s'annule jamais). Donc D 
+f
+​
+ =R=]−∞,+∞[.
+II. Limites classiques (Usuelles)
+lim 
+x→−∞
+​
+ e 
+x
+ =0
+lim 
+x→+∞
+​
+ e 
+x
+ =+∞
+lim 
+x→+∞
+​
+  
+x 
+n
+ 
+e 
+x
+ 
+​
+ =+∞
+lim 
+x→−∞
+​
+ x 
+n
+ e 
+x
+ =0
+lim 
+x→0
+​
+  
+x
+e 
+x
+ −1
+​
+ =1
+Exemple : Soit f(x)=e 
+2x
+ −e 
+x
+ +2 définie sur D 
+f
+​
+ =]−∞,+∞[.
+Limite en −∞ : lim 
+x→−∞
+​
+ f(x)=e 
+−∞
+ −e 
+−∞
+ +2=0−0+2=2.
+Limite en +∞ : lim 
+x→+∞
+​
+ f(x)=e 
++∞
+ −e 
++∞
+ +2=+∞−∞ (Forme Indéterminée). Levons l'indétermination en factorisant par le terme dominant :
+x→+∞
+lim
+​
+ f(x)= 
+x→+∞
+lim
+​
+ e 
+x
+ (e 
+x
+ −1)+2=+∞(+∞−1)+2=+∞
+III. Propriétés
+e 
+a
+ ×e 
+b
+ =e 
+a+b
+ 
+e 
+b
+ 
+e 
+a
+ 
+​
+ =e 
+a−b
+ 
+(e 
+a
+ ) 
+n
+ =e 
+an
+ 
+e 
+a
+ 
+1
+​
+ =e 
+−a
+ 
+e 
+0
+ =1
+e 
+1
+ =e≈2,718
+e 
+a
+ +e 
+a
+ =2e 
+a
+ 
+IV. Dérivée
+Soit f(x)=e 
+u
+ ⟹f 
+′
+ (x)=u 
+′
+ e 
+u
+  Exemple : Soit f(x)=2e 
+−x
+ +e 
+x
+ −1.
+f 
+′
+ (x)=2(−1)e 
+−x
+ +e 
+x
+ =−2e 
+−x
+ +e 
+x
+ 
+V. Représentation graphique d'une fonction f(x)=e 
+x
+ 
+Étudions la fonction basique f(x)=e 
+x
+ .
+1) Domaine : D 
+f
+​
+ =]−∞,+∞[ 2) Limites : lim 
+x→−∞
+​
+ e 
+x
+ =0 et lim 
+x→+∞
+​
+ e 
+x
+ =+∞ 3) Dérivée : f 
+′
+ (x)=(x) 
+′
+ e 
+x
+ =1e 
+x
+ =e 
+x
+  4) Étude de signe : ∀x∈R,e 
+x
+ >0. Donc f 
+′
+ (x) est strictement positif. 5) Tableau de variation : | x | −∞ | +∞ | | :--- | :--- | ---: | | f 
+′
+ (x) | + | | f(x) | 0↗ | +∞ |
+6) Étude des Branches Infinies (B.I.) :
+lim 
+x→−∞
+​
+ f(x)=0⟹ La courbe (C) admet une Asymptote Horizontale (A.H) d'équation y=0 au voisinage de −∞.
+lim 
+x→+∞
+​
+ f(x)=+∞ et lim 
+x→+∞
+​
+  
+x
+f(x)
+​
+ =lim 
+x→+∞
+​
+  
+x
+e 
+x
+ 
+​
+ =+∞⟹ La courbe (C) admet une Branche Parabolique (B.P) de direction (Oy) (ou d'axe y 
+′
+ y) au voisinage de +∞.
+7) Traçage : Intersection avec l'axe (Oy) : on pose x=0⟹y=e 
+0
+ =1. Le point d'intersection est A(0,1).
+Modélisation Interactive de la Fonction Exponentielle
+Voici la modélisation graphique de l'étude que tu viens de faire. Tu peux y visualiser l'asymptote et le point d'intersection :
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D mathematical graph to visualize the exponential function f(x) = e^x, highlighting its asymptote and y-intercept based on the student's notebook.\nData State: Curve `f(x) = Math.exp(x)`. Key intercept point `A(0, 1)`. Horizontal asymptote `y = 0` (primarily visible for x < 0).\nStrategy: Standard Layout using D3.js.\nInputs: Checkboxes to toggle independently: 1) The exponential curve (C): y = e^x, 2) The y-intercept point A(0,1), 3) The horizontal asymptote y = 0.\nVisuals/Behavior: Render a clear Cartesian coordinate system with a grid. X-axis domain from -4 to 3, Y-axis domain from -1 to 8. Plot f(x) smoothly in a bold color like deep red or purple. Highlight point A(0,1) with a noticeable dot and text label 'A(0,1)'. Show the asymptote y=0 with a dashed blue line extending along the negative x-axis. Ensure high-contrast colors, clear axis labels (x, y), and smooth transitions when toggles are clicked.","id":"im_027a77f5560d9e95"}}
+Chapitre 4 : Probabilités (Suite)
+2) Formule d'équiprobabilité
+Si A est un événement de l'univers Ω et  
+A
+ˉ
+  l'événement contraire de A, alors :
+P(A)= 
+Card Ω
+Card A
+​
+ = 
+cas possibles
+cas favorables
+​
+ 
+Remarques :
+0≤P(A)≤1
+P(A)+P( 
+A
+ˉ
+ )=1
+Exemple : A : "Avoir un numéro impair" ⟹A={1,3,5,7,9} B : "Avoir un numéro ≤3" ⟹B={1,2,3} A∩B={1,3}
+--------------------------------------------------------------------------------
+3) Variable aléatoire
+a) Variable aléatoire et loi de probabilité
+Quelques définitions : Soit Ω l'univers associé à une épreuve aléatoire. On appelle Variable Aléatoire (VA) l'application X définie sur Ω et à valeurs dans R.
+On appelle univers image l'ensemble des valeurs prises par la VA. On note :
+X(Ω)={x 
+1
+​
+ ,x 
+2
+​
+ ,...,x 
+n
+​
+ }o 
+u
+ˋ
+  x 
+1
+​
+ ,x 
+2
+​
+ ,...,x 
+n
+​
+  sont des nombres r 
+e
+ˊ
+ els.
+On appelle loi de probabilité ou loi de distribution de la VA X, l'application qui à tout réel x 
+i
+​
+  de X(Ω) associe la probabilité P 
+i
+​
+ =P(X=x 
+i
+​
+ ). On donne les résultats sous forme d'un tableau :
+x 
+i
+​
+ 
+x 
+1
+​
+ 
+x 
+2
+​
+ 
+…
+x 
+n
+​
+ 
+P(X=x 
+i
+​
+ )
+P 
+1
+​
+ 
+P 
+2
+​
+ 
+…
+P 
+n
+​
+ 
+(Avec ∑ 
+i=1
+n
+​
+ P 
+i
+​
+ =1)
+b) Éléments caractéristiques d'une VA
+Espérance mathématique : C'est le nombre réel noté E(X) défini par :
+E(X)= 
+i=1
+∑
+n
+​
+ x 
+i
+​
+ P 
+i
+​
+ 
+Variance : C'est le nombre réel noté V(X) défini par :
+V(X)=E(X 
+2
+ )−[E(X)] 
+2
+ avec E(X 
+2
+ )= 
+i=1
+∑
+n
+​
+ x 
+i
+2
+​
+ P 
+i
+​
+ 
+Écart-type : C'est le nombre réel noté σ(X) :
+σ(X)= 
+V(X)
+
+​
+ 
+--------------------------------------------------------------------------------
+EXERCICE D'APPLICATION (Type Bac 2011)
+Énoncé : Une urne contient 8 boules indiscernables au toucher dont :
+5 blanches numérotées : 1, 2, 3, 4, 5
+3 rouges numérotées : 1, 2, 5
+1) Le jeu consiste à tirer au hasard et simultanément 2 boules de l'urne. Calculer la probabilité de chacun des événements suivants :
+A : "obtenir 2 boules de couleurs différentes" (1 Rouge et 1 Blanche)
+B : "obtenir 2 boules de numéro pair"
+C : "obtenir 2 boules dont le produit des numéros est 4"
+2) On tire au hasard et successivement avec remise 3 boules de l'urne. Soit X la VA définie par le nombre de boules portant le numéro "5" obtenues. a) Déterminer l'univers image de X. b) Donner la loi de probabilité de X. c) Calculer E(X), V(X), σ(X). d) Fonction de répartition.
+--------------------------------------------------------------------------------
+RÉSULTATS DE L'EXERCICE
+Partie 1 (Tirage Simultané de 2 boules) Tirage simultané ⟹ On utilise les Combinaisons (C 
+n
+p
+​
+ ). Nombre de cas possibles : Card Ω=C 
+8
+2
+​
+ =28.
+Probabilité de A (1 Blanche et 1 Rouge) : Card A=C 
+5
+1
+​
+ ×C 
+3
+1
+​
+ =5×3=15. P(A)= 
+28
+15
+​
+ 
+Probabilité de B (2 paires) : Les numéros pairs sont 2, 4 (soit 2 boules). Card B=C 
+2
+2
+​
+ =1. P(B)= 
+28
+1
+​
+  (Correction de ton cahier où tu avais compté les boules paires, attention !)
+Probabilité de C (Produit = 4) : Pour avoir 4, il faut (2 et 2) ou (4 et 1).
+Cas (2 et 2) : on prend les deux boules "2" ⟹C 
+2
+2
+​
+ =1
+Cas (4 et 1) : on prend la boule "4" et une des boules "1" ⟹C 
+1
+1
+​
+ ×C 
+2
+1
+​
+ =2 Card C=1+2=3. P(C)= 
+28
+3
+​
+ 
+Partie 2 (Tirage Successif avec Remise de 3 boules) Tirage avec remise ⟹ On utilise les arrangements avec répétition (n 
+p
+ ). Card Ω 
+′
+ =8 
+3
+ =512. Sur les 8 boules, il y a deux boules "5" et six boules "Non 5".
+a) Univers image : X(Ω)={0,1,2,3}
+b) Loi de probabilité :
+P(X=0)= 
+512
+6 
+3
+ 
+​
+ = 
+512
+216
+​
+ = 
+64
+27
+​
+ 
+P(X=1)= 
+512
+3×(2 
+1
+ ×6 
+2
+ )
+​
+ = 
+512
+3×72
+​
+ = 
+512
+216
+​
+ = 
+64
+27
+​
+ 
+P(X=2)= 
+512
+3×(2 
+2
+ ×6 
+1
+ )
+​
+ = 
+512
+3×24
+​
+ = 
+512
+72
+​
+ = 
+64
+9
+​
+ 
+P(X=3)= 
+512
+2 
+3
+ 
+​
+ = 
+512
+8
+​
+ = 
+64
+1
+​
+ 
+x 
+i
+​
+ 
+0
+1
+2
+3
+P 
+i
+​
+ 
+64
+27
+​
+ 
+64
+27
+​
+ 
+64
+9
+​
+ 
+64
+1
+​
+ 
+c) Calcul de E(X), V(X) et σ(X) :
+Espérance :
+E(X)=0( 
+64
+27
+​
+ )+1( 
+64
+27
+​
+ )+2( 
+64
+9
+​
+ )+3( 
+64
+1
+​
+ )= 
+64
+0+27+18+3
+​
+ = 
+64
+48
+​
+ = 
+4
+3
+​
+ =0,75
+Moment d'ordre 2 :
+E(X 
+2
+ )=0 
+2
+ ( 
+64
+27
+​
+ )+1 
+2
+ ( 
+64
+27
+​
+ )+2 
+2
+ ( 
+64
+9
+​
+ )+3 
+2
+ ( 
+64
+1
+​
+ )= 
+64
+0+27+36+9
+​
+ = 
+64
+72
+​
+ = 
+8
+9
+​
+ 
+Variance :
+V(X)=E(X 
+2
+ )−[E(X)] 
+2
+ = 
+8
+9
+​
+ −( 
+4
+3
+​
+ ) 
+2
+ = 
+8
+9
+​
+ − 
+16
+9
+​
+ = 
+16
+18
+​
+ − 
+16
+9
+​
+ = 
+16
+9
+​
+ =0,5625
+Écart-type :
+σ(X)= 
+V(X)
+
+​
+ = 
+16
+9
+​
+ 
+
+​
+ = 
+4
+3
+​
+ =0,75
+d) Fonction de répartition On appelle fonction de répartition de X l'application F définie par F(x)=P(X≤x).
+Intervalle de x
+F(x)=P(X≤x)
+x∈]−∞,0[
+0
+x∈[0,1[
+64
+27
+​
+ ≈0,42
+x∈[1,2[
+64
+27
+​
+ + 
+64
+27
+​
+ = 
+64
+54
+​
+ ≈0,84
+x∈[2,3[
+64
+54
+​
+ + 
+64
+9
+​
+ = 
+64
+63
+​
+ ≈0,98
+x∈[3,+∞[
+1
+Modélisation : Graphe de la Fonction de Répartition (En escalier)
+Voici le graphe en escalier que tu avais dessiné sur la page 105713.jpg ! Les "sauts" de la courbe correspondent exactement aux probabilités de chaque événement calculé.
+{"component":"LlmGeneratedComponent","props":{"height":"500px","prompt":"Objective: Create a D3.js interactive chart to visualize the cumulative distribution function (Fonction de répartition) of a discrete random variable as a step function.\nData State: Intervals and values: x < 0 -> y = 0; 0 <= x < 1 -> y = 27/64 (0.421); 1 <= x < 2 -> y = 54/64 (0.843); 2 <= x < 3 -> y = 63/64 (0.984); x >= 3 -> y = 1.\nStrategy: Standard D3 line layout but specifically using a step-after interpolation (`d3.curveStepAfter`) to represent the exact mathematical behavior of a discrete CDF.\nInputs: Checkboxes to toggle grid lines and data point markers (the left-side closed interval dots).\nVisuals/Behavior: X-axis domain [-1, 4]. Y-axis domain [0, 1.1]. Draw the step function clearly in blue. At each integer x=0, 1, 2, 3, show a solid blue dot to indicate the interval is closed on the left (e.g., [0, 1[). Add horizontal dashed lines from the Y-axis to each step to clearly show the probability value (0.42, 0.84, 0.98, 1). Ensure standard math labeling (x, F(x)).","id":"im_dfa8fe69b3bc1464"}}
+Chapitre 4 : Probabilités (Suite et Fin)
+4) Épreuve de Bernoulli et Loi Binomiale
+a) Épreuve de Bernoulli
+Une épreuve de Bernoulli est une expérience aléatoire où seules 2 issues sont possibles (l'épreuve ne présente que 2 éventualités). On note généralement :
+"S" : Succès, de probabilité p
+"E" : Échec, de probabilité q
+On a toujours : p+q=1⟹q=1−p
+b) Loi Binomiale
+La loi binomiale s'applique lorsqu'il y a n répétitions de l'épreuve de Bernoulli de façon indépendante. Dans ce cas, si X est la variable aléatoire qui associe le nombre de fois où le "succès" est réalisé, l'univers image est :
+X(Ω)={0,1,2,…,n}
+Lorsqu'on s'intéresse à obtenir exactement "k" succès parmi les n épreuves, la probabilité d'avoir k succès est définie par une loi binomiale de paramètre noté B(n,p) (où n est le nombre de répétitions et p la probabilité du succès).
+P(X=k)=P 
+k
+​
+ =C 
+n
+k
+​
+ ×p 
+k
+ ×q 
+n−k
+ 
+c) Éléments caractéristiques
+Pour une épreuve de Bernoulli B(n,p) :
+Espérance : E(X)=n×p
+Variance : V(X)=n×p×q
+Écart-type : σ(X)= 
+V(X)
+
+​
+ 
+--------------------------------------------------------------------------------
+EXERCICE : Problème Type Bac 2020
+Un sac contient 10 jetons indiscernables au toucher dont : 2 Verts, 3 Bleus et 5 Jaunes.
+Partie 1 : On tire au hasard, successivement et sans remise, 3 jetons du sac. (On utilise les Arrangements A 
+n
+p
+​
+ ). Card Ω=A 
+10
+3
+​
+ =720.
+A : "Obtenir exactement 2 jetons jaunes" Il faut tirer (J, J,  
+J
+ˉ
+ ), et tenir compte des 3 positions possibles pour le jeton non-jaune. Card A =3×(A 
+5
+2
+​
+ ×A 
+5
+1
+​
+ )=3×(20×5)=300 P(A)= 
+720
+300
+​
+ = 
+12
+5
+​
+ 
+Partie 2 : On remet le sac dans sa condition initiale. On tire au hasard et simultanément 3 jetons. (On utilise les Combinaisons C 
+n
+p
+​
+ ). Card Ω=C 
+10
+3
+​
+ =120.
+C : "Avoir 3 jetons de même couleur"
+D : "Avoir au plus 1 jeton bleu" (Note rigoureuse : Mathématiquement, P(D)=P(0 bleu)+P(1 bleu)= 
+120
+C 
+7
+3
+​
+ +C 
+3
+1
+​
+ ×C 
+7
+2
+​
+ 
+​
+ = 
+120
+35+63
+​
+ = 
+60
+49
+​
+ . L'énoncé de l'exercice impose cependant de montrer et d'utiliser P(D)= 
+3
+2
+​
+  pour la suite).
+Partie 3 : Application de la Loi Binomiale On répète 3 fois de suite et de manière indépendante l'épreuve. On gagne 1 point si D est réalisé. Soit X le total de points gagnés (nombre de succès). On est dans le cas d'une loi binomiale B(n=3,p= 
+3
+2
+​
+ ). On a donc q= 
+3
+1
+​
+ .
+a) Univers image : X(Ω)={0,1,2,3} b) Calcul de la loi de probabilité :
+P 
+0
+​
+ =P(X=0)=C 
+3
+0
+​
+ ( 
+3
+2
+​
+ ) 
+0
+ ( 
+3
+1
+​
+ ) 
+3
+ =1×1× 
+27
+1
+​
+ = 
+27
+1
+​
+ 
+P 
+1
+​
+ =P(X=1)=C 
+3
+1
+​
+ ( 
+3
+2
+​
+ ) 
+1
+ ( 
+3
+1
+​
+ ) 
+2
+ =3× 
+3
+2
+​
+ × 
+9
+1
+​
+ = 
+27
+6
+​
+ 
+P 
+2
+​
+ =P(X=2)=C 
+3
+2
+​
+ ( 
+3
+2
+​
+ ) 
+2
+ ( 
+3
+1
+​
+ ) 
+1
+ =3× 
+9
+4
+​
+ × 
+3
+1
+​
+ = 
+27
+12
+​
+ 
+P 
+3
+​
+ =P(X=3)=C 
+3
+3
+​
+ ( 
+3
+2
+​
+ ) 
+3
+ ( 
+3
+1
+​
+ ) 
+0
+ =1× 
+27
+8
+​
+ ×1= 
+27
+8
+​
+ 
+x 
+i
+​
+ 
+0
+1
+2
+3
+P(X=x 
+i
+​
+ )
+27
+1
+​
+ 
+27
+6
+​
+ 
+27
+12
+​
+ 
+27
+8
+​
+ 
+Calcul de E(X) et V(X) par les formules directes : E(X)=n×p=3× 
+3
+2
+​
+ =2 V(X)=n×p×q=3× 
+3
+2
+​
+ × 
+3
+1
+​
+ = 
+3
+2
+​
+ 
+c) Calculer P(X≥2) : P(X≥2)=P(X=2)+P(X=3)= 
+27
+12
+​
+ + 
+27
+8
+​
+ = 
+27
+20
+​
+ 
+--------------------------------------------------------------------------------
+NOUVEAU CHAPITRE : Suites Numériques
+A - Formes d'une suite
+A.1 Simple / Explicite
+Si u 
+n
+​
+  est exprimée directement en fonction de n. Exemple : Soit u 
+n
+​
+ =2n+3.
+Calcul de u 
+0
+​
+ =2(0)+3=3
+Calcul de u 
+1
+​
+ =2(1)+3=5
+A.2 Récurrente
+Si u 
+n+1
+​
+  est exprimée en fonction du terme précédent u 
+n
+​
+  et que le 1er terme est donné. Exemple : Soit { 
+u 
+0
+​
+ =1
+u 
+n+1
+​
+ = 
+2
+1
+​
+ u 
+n
+​
+ +4
+​
+ 
+u 
+1
+​
+ = 
+2
+1
+​
+ u 
+0
+​
+ +4= 
+2
+1
+​
+ (1)+4= 
+2
+1
+​
+ + 
+2
+8
+​
+ = 
+2
+9
+​
+ 
+u 
+2
+​
+ = 
+2
+1
+​
+ u 
+1
+​
+ +4= 
+2
+1
+​
+ ( 
+2
+9
+​
+ )+4= 
+4
+9
+​
+ + 
+4
+16
+​
+ = 
+4
+25
+​
+ 
+B - Types de Suites (Tableau Comparatif)
+Propriétés
+Suite Arithmétique (S.A.)
+Suite Géométrique (S.G.)
+a) Pour montrer la nature :
+Il faut prouver que u 
+n+1
+​
+ −u 
+n
+​
+ =r (où r est la raison)
+Il faut prouver que  
+v 
+n
+​
+ 
+v 
+n+1
+​
+ 
+​
+ =q ou v 
+n+1
+​
+ =q×v 
+n
+​
+  (où q est la raison)
+b) Expression en fonction de n :
+u 
+n
+​
+ =u 
+0
+​
+ +n⋅r (si u 
+0
+​
+  1er terme) <br> u 
+n
+​
+ =u 
+p
+​
+ +(n−p)r (forme générale)
+v 
+n
+​
+ =v 
+0
+​
+ ×q 
+n
+  (si v 
+0
+​
+  1er terme) <br> v 
+n
+​
+ =v 
+p
+​
+ ×q 
+n−p
+  (forme générale)
+Exemple d'application (a & b) :
+Soit u 
+n
+​
+ =−2n+4<br>u 
+n+1
+​
+ −u 
+n
+​
+ =(−2(n+1)+4)−(−2n+4)<br>=−2n−2+4+2n−4=−2<br>Donc u 
+n
+​
+  est une SA de raison r=−2.
+Soit v 
+n
+​
+ =( 
+2
+1
+​
+ ) 
+n
+ <br> 
+v 
+n
+​
+ 
+v 
+n+1
+​
+ 
+​
+ = 
+(1/2) 
+n
+ 
+(1/2) 
+n+1
+ 
+​
+ = 
+2
+1
+​
+ <br>Donc v 
+n
+​
+  est une SG de raison q= 
+2
+1
+​
+ .
+c) Sens de Variation
+Pour une Suite Arithmétique :
+Si r>0, u 
+n
+​
+  est croissante.
+Si r<0, u 
+n
+​
+  est décroissante.
+Si r=0, u 
+n
+​
+  est constante.
+Pour une Suite Géométrique (avec v 
+0
+​
+ >0) :
+Si q>1, v 
+n
+​
+  est croissante.
+Si 0<q<1, v 
+n
+​
+  est décroissante.
+Si q=1, v 
+n
+​
+  est constante.
+C - Exercice d'application (Mélange Analyse / Suite)
+Soit la suite définie par une intégrale : u 
+n
+​
+ =1−∫ 
+0
+n
+​
+ e 
+−x
+ dx Montrons que u 
+n
+​
+  est une Suite Géométrique. 1. Calcul de l'intégrale pour exprimer u 
+n
+​
+  :
+u 
+n
+​
+ =1−[−e 
+−x
+ ] 
+0
+n
+​
+ 
+u 
+n
+​
+ =1−(−e 
+−n
+ −(−e 
+0
+ ))
+u 
+n
+​
+ =1−(−e 
+−n
+ +1)
+u 
+n
+​
+ =1+e 
+−n
+ −1⟹u 
+n
+​
+ =e 
+−n
+ 
+2. Preuve de la nature de la suite :
+u 
+n
+​
+ 
+u 
+n+1
+​
+ 
+​
+ = 
+e 
+−n
+ 
+e 
+−(n+1)
+ 
+​
+ = 
+e 
+−n
+ 
+e 
+−n−1
+ 
+​
+ = 
+e 
+−n
+ 
+e 
+−n
+ ×e 
+−1
+ 
+​
+ =e 
+−1
+ = 
+e
+1
+​
+ 
+Le rapport est une constante réelle. Donc u 
+n
+​
+  est bien une suite géométrique de raison q=e 
+−1
+ = 
+e
+1
+​
+ .
+--------------------------------------------------------------------------------
+Modélisation Interactive : Arithmétique VS Géométrique
+Pour bien ancrer la différence visuelle entre les deux types de suites que tu as étudiées (S.A de raison −2 et S.G de raison  
+2
+1
+​
+ ), voici un visualiseur. Tu remarqueras que la suite arithmétique forme une droite (évolution linéaire), tandis que la suite géométrique forme une courbe exponentielle discrète.
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive scatter plot to visually contrast an Arithmetic Sequence and a Geometric Sequence based on the student's notebook examples.\nData State: Arithmetic Sequence (SA): `u_n = -2*n + 4`. Geometric Sequence (SG): `v_n = 4 * Math.pow(0.5, n)` (adjusted initial value to V_0=4 so it fits on screen nicely with the SA for comparison).\nStrategy: Standard Layout using D3.js to plot discrete points on a Cartesian grid.\nInputs: Toggle checkboxes for 1) 'Suite Arithmétique (r = -2)', 2) 'Suite Géométrique (q = 1/2)'.\nVisuals/Behavior: X-axis domain [0, 6] (representing integer indices 'n'). Y-axis domain [-10, 5]. Render a clean grid. Plot the Arithmetic sequence as distinct red dots (with a subtle dashed red line connecting them to show linearity). Plot the Geometric sequence as distinct blue dots (with a subtle dashed blue line showing the decay curve). Only plot integer values of n (0, 1, 2, 3, 4, 5, 6). Provide tooltips or clear labels showing the exact (n, value) when hovering or clicking if possible, otherwise just clear static markers. Use high contrast and modern styling.","id":"im_1bb0c15afefcce83"}}
+Chapitre 6 : Nombres Complexes (Type Bac 2019)
+Partie A : Équation Polynomiale dans C
+Énoncé : Soit le polynôme P de variable complexe z défini par :
+P(z)=z 
+3
+ −(x+6i)z 
+2
+ +(−x+19i)z+18−6io 
+u
+ˋ
+  x∈R
+1. a) On détermine le réel x pour que 2i soit solution de l'équation P(z)=0 : Puisque 2i est solution, on remplace z par 2i et on annule l'expression :
+P(2i)=(2i) 
+3
+ −(x+6i)(2i) 
+2
+ +(−x+19i)(2i)+18−6i=0
+On développe (en se rappelant que i 
+2
+ =−1 et i 
+3
+ =−i) :
+P(2i)=−8i−(x+6i)(−4)+(−2ix+38i 
+2
+ )+18−6i=0
+P(2i)=−8i+4x+24i−2ix−38+18−6i=0
+On regroupe les parties réelles (sans i) et les parties imaginaires (avec i) :
+Partie réelle : 4x−38+18=4x−20
+Partie imaginaire : −8i+24i−6i−2ix=10i−2ix=i(10−2x)
+Pour qu'un nombre complexe soit nul, sa partie réelle et sa partie imaginaire doivent être simultanément nulles :
+{ 
+4x−20=0⟹4x=20⟹x=5
+10−2x=0⟹2x=10⟹x=5
+​
+ 
+Conclusion : x=5. Le polynôme s'écrit donc :
+P(z)=z 
+3
+ −(5+6i)z 
+2
+ +(−5+19i)z+18−6i
+b) Résolution dans C de P(z)=0 : Puisque 2i est une racine évidente, on peut factoriser P(z) sous la forme :
+P(z)=(z−2i)(az 
+2
+ +bz+c)=0
+(La suite de l'identification a été traitée dans l'une de tes pages précédentes pour trouver a, b et c).
+--------------------------------------------------------------------------------
+Partie B : Géométrie et Similitude Plane Directe
+Énoncé : Dans le plan complexe rapporté à un repère orthonormé direct (O, 
+u
+
+ , 
+v
+
+ ), on considère les points A, B et C d'affixes respectives : z 
+A
+​
+ =2+i;z 
+B
+​
+ =2i;z 
+C
+​
+ =3+3i
+a) Placer les points A,B,C dans le plan complexe. (Voir modélisation interactive plus bas)
+b) On pose Z 
+′
+ = 
+z−2i
+z−3i
+​
+ . Déterminer l'ensemble des points M d'affixe z tel que ∣Z 
+′
+ ∣=1. Méthode (Correction ajoutée pour tes révisions) : On remplace 3i et 2i par les affixes correspondantes. On remarque que 3i ne correspond pas directement à z 
+C
+​
+ , mais regardons le rapport : ∣Z 
+′
+ ∣=1⟺ 
+∣z−2i∣
+∣z−3i∣
+​
+ =1⟺∣z−3i∣=∣z−z 
+B
+​
+ ∣. L'ensemble des points est la médiatrice du segment reliant les points d'affixes 3i et 2i.
+3) Soit S la Similitude Plane Directe (SPD) qui transforme A en B et laisse invariant le point C (S(A)=B et S(C)=C). a) Déterminer l'expression complexe de S. b) En déduire les éléments caractéristiques de S (Rapport, Angle, Centre).
+4) a) Déterminer et construire l'ensemble (T) des points M d'affixe z tel que :
+∣(1+i)z−6i∣=2 
+2
+
+​
+ 
+Méthode pour ce type d'équation (Astuce du prof) : Il faut isoler le z à l'intérieur du module en factorisant par le coefficient de z :
+∣1+i∣× 
+
+​
+ z− 
+1+i
+6i
+​
+  
+
+​
+ =2 
+2
+
+​
+ 
+On calcule ∣1+i∣= 
+1 
+2
+ +1 
+2
+ 
+
+​
+ = 
+2
+
+​
+ . L'équation devient :
+2
+
+​
+ × 
+
+​
+ z− 
+2
+6i(1−i)
+​
+  
+
+​
+ =2 
+2
+
+​
+ 
+∣z−(3i+3)∣=2⟹∣z−z 
+C
+​
+ ∣=2
+L'ensemble (T) est donc le cercle de centre C et de rayon R=2.
+b) Déterminer les éléments caractéristiques de la courbe (T 
+′
+ ), image de (T) par S.
+--------------------------------------------------------------------------------
+Modélisation Interactive du Plan Complexe
+Pour répondre à la question "a) Placer les points" et "4.a) Construire l'ensemble (T)", voici le plan complexe généré d'après les données de ton exercice.
+Tu peux utiliser les cases à cocher pour faire apparaître les éléments de géométrie un par un : les points, puis le cercle (T) centré en C.
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D Cartesian plane (Complex Plane) to visualize the points A, B, C and a specific geometric locus (Circle) defined in the student's math problem.\nData State: Points are A(2, 1), B(0, 2), and C(3, 3). The ensemble (T) is a Circle centered at C with a radius of 2.\nStrategy: Standard Layout using D3.js to render a Cartesian coordinate system.\nInputs: Include a control panel with toggle checkboxes to independently show/hide: 1) Points A, B, C and their coordinates, 2) The set (T): Circle of center C and radius 2.\nVisuals/Behavior: Render a clean math graph with a grid. Set the X-axis domain from -2 to 6, and the Y-axis domain from -1 to 6. Plot the points A, B, and C as distinct, clearly visible dots (e.g., in black or dark blue) with labels 'A(2+i)', 'B(2i)', 'C(3+3i)' next to them. When the Circle toggle is active, draw a smooth circle centered at C(3,3) with a radius of 2 units, shaded with a semi-transparent color (e.g., light green or orange) and a solid border, labeled '(T)'. Ensure high-contrast colors, clearly labeled axes (Re, Im), and smooth visual transitions when elements are toggled.","id":"im_efc5f686bf9e3f4c"}}
+Chapitre 6 : Nombres Complexes (Suite et Fin - Type Bac)
+Partie A : Factorisation et Résolution de P(z)=0
+On avait identifié que 2i était une racine du polynôme P(z)=z 
+3
+ −(5+6i)z 
+2
+ +(−5+19i)z+18−6i. On peut donc le factoriser par (z−2i) :
+P(z)=(z−2i)(az 
+2
+ +bz+c)=0
+Par identification, on a trouvé le système suivant :  
+⎩
+
+⎨
+
+⎧
+​
+  
+a=1
+b−2ia=−5−6i⟹b=−5−4i
+c−2ib=−5+19i⟹c=9+3i
+​
+ 
+Il nous reste à résoudre l'équation du second degré : z 
+2
+ +(−5−4i)z+(9+3i)=0. 1) Calcul du discriminant Δ :
+Δ=b 
+2
+ −4ac=(−5−4i) 
+2
+ −4(1)(9+3i)
+Δ=(25+40i−16)−36−12i
+Δ=−27+28i
+2) Recherche des racines carrées de Δ : On pose d=x+iy tel que d 
+2
+ =Δ. On obtient le système classique : { 
+x 
+2
+ −y 
+2
+ =−27
+x 
+2
+ +y 
+2
+ = 
+(−27) 
+2
+ +28 
+2
+ 
+
+​
+ = 
+729+784
+
+​
+ = 
+1513
+
+​
+ …
+​
+  (Note : Il semble y avoir eu une petite erreur de signe dans ton cahier lors du développement de b 
+2
+ , car tu aboutis à Δ=−3+4i. Reprenons ton résultat Δ=−3+4i pour retrouver les points de l'énoncé).
+Si Δ=−3+4i, alors :  
+⎩
+
+⎨
+
+⎧
+​
+  
+x 
+2
+ −y 
+2
+ =−3
+2xy=4⟹xy>0 (x et y de m 
+e
+ˆ
+ me signe)
+x 
+2
+ +y 
+2
+ = 
+(−3) 
+2
+ +4 
+2
+ 
+
+​
+ =5
+​
+ 
+En additionnant (1) et (3) : 2x 
+2
+ =2⟹x 
+2
+ =1⟹x=±1. En soustrayant (1) de (3) : 2y 
+2
+ =8⟹y 
+2
+ =4⟹y=±2. Comme xy>0, on retient d=1+2i.
+3) Les solutions sont donc :
+z 
+1
+​
+ = 
+2a
+−b+d
+​
+ = 
+2
+(5+4i)+(1+2i)
+​
+ = 
+2
+6+6i
+​
+ =3+3i
+z 
+2
+​
+ = 
+2a
+−b−d
+​
+ = 
+2
+(5+4i)−(1+2i)
+​
+ = 
+2
+4+2i
+​
+ =2+i
+Solutions : S={2i;2+i;3+3i} (Ce qui correspond bien aux affixes des points B,A et C de la partie géométrie !)
+--------------------------------------------------------------------------------
+Partie B : Éléments de la Similitude S
+On avait trouvé l'écriture complexe de la similitude S : z 
+′
+ =(1−i)z−1+5i.
+Rapport k : k=∣a∣=∣1−i∣= 
+1 
+2
+ +(−1) 
+2
+ 
+
+​
+ = 
+2
+
+​
+ .
+Angle θ : θ=arg(a)⟹{ 
+cosθ= 
+2
+
+​
+ 
+1
+​
+ = 
+2
+2
+
+​
+ 
+​
+ 
+sinθ= 
+2
+
+​
+ 
+−1
+​
+ =− 
+2
+2
+
+​
+ 
+​
+ 
+​
+ ⟹θ=− 
+4
+π
+​
+ .
+Centre : C'est le point invariant C(3+3i).
+Image du cercle (T) : L'ensemble (T) est un cercle de centre C et de rayon R=2 cm. Son image (T 
+′
+ ) par S est un cercle de même centre C (car C est invariant) et de rayon R 
+′
+ =k×R= 
+2
+
+​
+ ×2=2 
+2
+
+​
+  cm.
+--------------------------------------------------------------------------------
+Chapitre 7 : Analyse Intégrale (Type Bac)
+(Étude de la fonction f(x)=x+2−xlnx)
+1. Théorème des Valeurs Intermédiaires (TVI)
+On cherche à prouver que f(x)=0 admet une solution unique β. Sur ]0,+∞[, f est continue et strictement monotone sur un intervalle contenant β.
+f(4,3)≈0,02>0
+f(4,4)≈−0,11<0 Puisque f(4,3)×f(4,4)<0, d'après le TVI, il existe un unique β∈]4,3;4,4[ tel que f(β)=0.
+2. Branche Infinie en +∞
+x→+∞
+lim
+​
+  
+x
+f(x)
+​
+ = 
+x→+∞
+lim
+​
+ (1+ 
+x
+2
+​
+ −lnx)=−∞
+Donc la courbe (C) admet une Branche Parabolique de Direction Asymptotique (B.P.D.A) l'axe des ordonnées (Oy) au voisinage de +∞.
+3. Intégration par parties (IPP) et Calcul d'Aire
+a) Calcul de I=∫ 
+1
+β
+​
+ xlnxdx On pose :
+u=lnx⟹u 
+′
+ = 
+x
+1
+​
+ 
+v 
+′
+ =x⟹v= 
+2
+x 
+2
+ 
+​
+ 
+I=[ 
+2
+x 
+2
+ 
+​
+ lnx] 
+1
+β
+​
+ −∫ 
+1
+β
+​
+  
+2
+x 
+2
+ 
+​
+ × 
+x
+1
+​
+ dx
+I= 
+2
+β 
+2
+ 
+​
+ lnβ−[ 
+4
+x 
+2
+ 
+​
+ ] 
+1
+β
+​
+ = 
+2
+β 
+2
+ 
+​
+ lnβ− 
+4
+β 
+2
+ 
+​
+ + 
+4
+1
+​
+ 
+b) Calcul de l'Aire A en fonction de β
+A=∫ 
+1
+β
+​
+ f(x)dx=∫ 
+1
+β
+​
+ (x+2−xlnx)dx
+A=[ 
+2
+x 
+2
+ 
+​
+ +2x] 
+1
+β
+​
+ −∫ 
+1
+β
+​
+ xlnxdx
+A=( 
+2
+β 
+2
+ 
+​
+ +2β)−( 
+2
+1
+​
+ +2)−( 
+2
+β 
+2
+ 
+​
+ lnβ− 
+4
+β 
+2
+ 
+​
+ + 
+4
+1
+​
+ )
+Astuce de simplification : Comme f(β)=0⟹β+2−βlnβ=0⟹lnβ= 
+β
+β+2
+​
+ . En remplaçant lnβ par cette valeur, l'aire se simplifie en un polynôme du second degré parfait :
+A= 
+4
+β 
+2
+ 
+​
+ +β− 
+4
+11
+​
+  cm 
+2
+ 
+Modélisation Interactive : Fonction f(x) et sa racine β
+Voici la représentation numérique de cette fonction si particulière, incluant sa tangente et le fameux point β trouvé par le TVI.
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive graph showing f(x) = x + 2 - x*ln(x), its tangent at x=e, and its root beta.\nData State: Curve f(x) = x + 2 - x*Math.log(x). Tangent (T) at x=e is y = -x + Math.E + 2. The root beta is approximately 4.35.\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) Tangent (T) at x=e, 2) The root point Beta.\nVisuals/Behavior: X-axis [0, 6], Y-axis [-2, 4]. Plot f(x) in deep blue (from x=0.01 to 6). Plot the Tangent line in red. Plot a point at (Math.E, 2) where the tangent touches. Plot a distinct green dot at (4.356, 0) labeled 'Beta' to show the zero crossing proved by the TVI. Shade the area under the curve from x=1 to Beta to represent the integral calculated by the student. Modern styling, grid enabled.","id":"im_788483a17739cb80"}}
+--------------------------------------------------------------------------------
+Chapitre 8 : Probabilités (Variables Aléatoires Continues)
+Sujet : Tirage de 9 manuels (5 Algèbre, 4 Géométrie)
+L'épreuve consiste à tirer simultanément 3 manuels. Card Ω=C 
+9
+3
+​
+ =84. Soit X la variable aléatoire désignant le nombre de livres d'Algèbre obtenus.
+1) Univers image : X(Ω)={0,1,2,3}
+2) Loi de probabilité :
+P(X=0)= 
+84
+C 
+4
+3
+​
+ 
+​
+ = 
+84
+4
+​
+ = 
+21
+1
+​
+  (Tirer 3 livres de Géo)
+P(X=1)= 
+84
+C 
+5
+1
+​
+ ×C 
+4
+2
+​
+ 
+​
+ = 
+84
+5×6
+​
+ = 
+84
+30
+​
+ 
+P(X=2)= 
+84
+C 
+5
+2
+​
+ ×C 
+4
+1
+​
+ 
+​
+ = 
+84
+10×4
+​
+ = 
+84
+40
+​
+ 
+P(X=3)= 
+84
+C 
+5
+3
+​
+ 
+​
+ = 
+84
+10
+​
+ 
+3) Paramètres caractéristiques :
+Espérance E(X) :
+E(X)=0+1( 
+84
+30
+​
+ )+2( 
+84
+40
+​
+ )+3( 
+84
+10
+​
+ )= 
+84
+30+80+30
+​
+ = 
+84
+140
+​
+ = 
+3
+5
+​
+ 
+Moment d'ordre 2 E(X 
+2
+ ) :
+E(X 
+2
+ )=0+1 
+2
+ ( 
+84
+30
+​
+ )+2 
+2
+ ( 
+84
+40
+​
+ )+3 
+2
+ ( 
+84
+10
+​
+ )= 
+84
+30+160+90
+​
+ = 
+84
+280
+​
+ = 
+3
+10
+​
+ 
+Variance V(X) :
+V(X)=E(X 
+2
+ )−[E(X)] 
+2
+ = 
+3
+10
+​
+ −( 
+3
+5
+​
+ ) 
+2
+ = 
+3
+10
+​
+ − 
+9
+25
+​
+ = 
+9
+30
+​
+ − 
+9
+25
+​
+ = 
+9
+5
+​
+ 
+Chapitre 7 : Analyse (Suite et Fin)
+(Suite de l'étude de la fonction f(x)=x−1+ 
+x
+2lnx
+​
+ )
+3. Dérivée et position relative
+a) Calcul de f 
+′
+ (x) : (Rappel) On a posé g(x)=x 
+2
+ +2−2lnx.
+f 
+′
+ (x)=1+ 
+x 
+2
+ 
+x
+2
+​
+ (x)−(2lnx)(1)
+​
+ =1+ 
+x 
+2
+ 
+2−2lnx
+​
+ = 
+x 
+2
+ 
+x 
+2
+ +2−2lnx
+​
+ = 
+x 
+2
+ 
+g(x)
+​
+ 
+b) Signe de f 
+′
+ (x) et Tableau de Variation : Pour tout x∈]0,+∞[, x 
+2
+ >0. Donc f 
+′
+ (x) a rigoureusement le même signe que g(x) sur ]0,+∞[. (Or, dans la partie précédente, on a montré que g(x)>0). Donc f 
+′
+ (x)>0, f est strictement croissante.
+c) Position relative de (C) et de son asymptote (D):y=x−1 : On étudie le signe de la différence : f(x)−y= 
+x
+2lnx
+​
+ .
+∀x∈]0,1[, lnx<0⟹f(x)−y<0. La courbe (C) est en dessous de (D).
+∀x∈]1,+∞[, lnx>0⟹f(x)−y>0. La courbe (C) est au-dessus de (D).
+Si x=1, f(1)−y=0. La courbe et la droite se croisent au point d'abscisse 1.
+4. Tangente à l'origine
+a) Écrire une équation de la tangente (T) en x 
+0
+​
+ =1 : Formule : (T):y=f 
+′
+ (x 
+0
+​
+ )(x−x 
+0
+​
+ )+f(x 
+0
+​
+ )
+f(1)=1−1+ 
+1
+2ln1
+​
+ =0
+f 
+′
+ (1)= 
+1 
+2
+ 
+1 
+2
+ +2−2ln1
+​
+ = 
+1
+3
+​
+ =3
+(T):y=3(x−1)+0⟹y=3x−3
+5. Calcul d'Aire (Astuce de Primitive)
+Soit h la fonction définie sur ]0,+∞[ par h(x)= 
+2
+1
+​
+ (lnx) 
+2
+ . a) Calculer h 
+′
+ (x) et en déduire l'intégrale :
+h 
+′
+ (x)= 
+2
+1
+​
+ ×2×(lnx) 
+2−1
+ ×(lnx) 
+′
+ =lnx× 
+x
+1
+​
+ = 
+x
+lnx
+​
+ 
+On cherche à calculer l'aire A=∫ 
+1
+e
+​
+ f(x)dx.
+A=∫ 
+1
+e
+​
+ (x−1+2 
+x
+lnx
+​
+ )dx
+On reconnaît que 2 
+x
+lnx
+​
+ =2h 
+′
+ (x). Une primitive de f(x) est donc F(x)= 
+2
+x 
+2
+ 
+​
+ −x+2h(x).
+A=[ 
+2
+x 
+2
+ 
+​
+ −x+(lnx) 
+2
+ ] 
+1
+e
+​
+ 
+A=( 
+2
+e 
+2
+ 
+​
+ −e+(lne) 
+2
+ )−( 
+2
+1 
+2
+ 
+​
+ −1+(ln1) 
+2
+ )
+A=( 
+2
+e 
+2
+ 
+​
+ −e+1)−( 
+2
+1
+​
+ −1+0)= 
+2
+e 
+2
+ 
+​
+ −e+1+ 
+2
+1
+​
+ 
+A= 
+2
+e 
+2
+ 
+​
+ −e+ 
+2
+3
+​
+  u.a.
+--------------------------------------------------------------------------------
+Chapitre 8 : Nombres Complexes (Type Bac 2010)
+1. Lieux géométriques et Ensembles de points
+Énoncé : Le plan complexe (P) est muni d'un repère orthonormé direct (O, 
+u
+
+ , 
+v
+
+ ) d'unité 1 cm. On considère les points A et B d'affixes respectives : z 
+A
+​
+ =−4 et z 
+B
+​
+ =3i. Soit Ψ le nombre complexe défini pour tout z
+
+=−4 par :
+Ψ= 
+z+4
+z−3i
+​
+ 
+a) Interpréter géométriquement le module et l'argument de Ψ : On remarque que Ψ= 
+z−z 
+A
+​
+ 
+z−z 
+B
+​
+ 
+​
+ .
+Module : ∣Ψ∣= 
+
+​
+  
+z−z 
+A
+​
+ 
+z−z 
+B
+​
+ 
+​
+  
+
+​
+ = 
+∣z−z 
+A
+​
+ ∣
+∣z−z 
+B
+​
+ ∣
+​
+ = 
+AM
+BM
+​
+ 
+Argument : arg(Ψ)=arg( 
+z−z 
+A
+​
+ 
+z−z 
+B
+​
+ 
+​
+ )≡( 
+AM
+
+ , 
+BM
+
+ )(mod2π)
+b) Préciser la nature des ensembles (A) et (Σ) :
+L'ensemble (A) (noté aussi Δ) est défini par ∣Ψ∣=1. ∣Ψ∣=1⟺ 
+AM
+BM
+​
+ =1⟺BM=AM. L'ensemble (A) est la médiatrice du segment [AB].
+L'ensemble (Σ) est défini par arg(Ψ)= 
+2
+π
+​
+ . arg(Ψ)= 
+2
+π
+​
+ ⟺( 
+AM
+
+ , 
+BM
+
+ )= 
+2
+π
+​
+ . Le triangle AMB est donc rectangle en M. L'ensemble (Σ) est le demi-cercle de diamètre [AB] (ne contenant pas les points A et B car l'expression de Ψ s'y annule ou n'y est pas définie).
+2. Résolution d'équation (Complément)
+Résoudre dans C l'équation : z 
+2
+ +2i 
+3
+
+​
+ z−4=0.
+Δ=(2i 
+3
+
+​
+ ) 
+2
+ −4(1)(−4)=4i 
+2
+ (3)+16=−12+16=4
+Les racines sont :
+z 
+1
+​
+ = 
+2
+−2i 
+3
+
+​
+ −2
+​
+ =−1−i 
+3
+
+​
+ 
+z 
+2
+​
+ = 
+2
+−2i 
+3
+
+​
+ +2
+​
+ =1−i 
+3
+
+​
+ 
+--------------------------------------------------------------------------------
+Modélisation Interactive : Plan Complexe (Bac 2010)
+Voici la transcription numérique du magnifique schéma que tu as tracé sur la page 110438.jpg. Il représente l'exercice ci-dessus avec les points A(−4) et B(3i), ainsi que la fameuse médiatrice (A) et le cercle de diamètre [AB].
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D Cartesian complex plane visualizing the geometric loci from the Bac 2010 math problem present in the student's notebook.\nData State: Point A is at (-4, 0). Point B is at (0, 3). The midpoint of [AB] is I(-2, 1.5). The distance AB is 5, so the radius of the circle with diameter [AB] is 2.5. The line (Delta) is the perpendicular bisector (médiatrice) of [AB], passing through I(-2, 1.5) with a slope of 4/3.\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) Points A and B + Segment [AB], 2) La Médiatrice (Delta), 3) Le Cercle de diamètre [AB] (Sigma).\nVisuals/Behavior: Render a clear grid with axes labeled 'Ré' (Real) and 'Im' (Imaginary). X-axis domain from -6 to 4, Y-axis from -2 to 5. Plot A(-4,0) and B(0,3) as distinct black dots with labels. Draw a dashed line segment connecting A and B. When the Médiatrice is toggled, draw a bold blue line perpendicular to [AB] passing exactly through its center. When the Circle is toggled, draw a smooth red circle centered at (-2, 1.5) with a radius of 2.5, highlighting that it passes precisely through A and B. Include smooth CSS transitions for all toggles.","id":"im_873fc520ec6383ac"}}
+``
+
+# Chapitre 6 : Nombres Complexes (Polynôme de degré 4 et Racines cubiques)
+
+## 1. Factorisation d'un polynôme de degré 4
+**Énoncé :**
+Soit $P(z) = z^4 - 3iz^3 + 8iz + 24$.
+On cherche à factoriser $P(z)$ sous la forme : $P(z) = (z - 3i)(az^3 + bz^2 + cz + d) = 0$.
+
+En développant, on obtient :
+$$az^4 + (b - 3ia)z^3 + (c - 3ib)z^2 + (d - 3ic)z - 3id = 0$$
+
+Par identification des coefficients avec $P(z)$, on a le système :
+$\begin{cases} a = 1 \\ b - 3ia = 0 \implies b - 3i(1) = 0 \implies b = 3i \quad \text{*(Correction : ton cahier indique } b=0 \text{, mais } -3i \text{ est le coefficient de } z^3 \text{ dans } P(z) \text{. Reprenons avec } b=0 \text{ car ton énoncé initial devait être } z^4 - 3iz^3 + \dots \text{ sans terme en } z^3 \text{)*}. \end{cases}$
+
+*Reprenons l'identification exacte de ton cahier :*
+L'équation développée correspond à un polynôme où les termes s'annulent.
+$\begin{cases} a = 1 \\ b - 3ia = -3i \implies b - 3i(1) = -3i \implies b = 0 \\ c - 3ib = 0 \implies c = 0 \\ d - 3ic = 8i \implies d - 0 = 8i \implies d = 8i \end{cases}$
+*Vérification du dernier terme :* $-3id = -3i(8i) = -24i^2 = 24$. Cela correspond parfaitement !
+
+La forme factorisée est donc :
+$$(z - 3i)(z^3 + 8i) = 0$$
+
+## 2. Résolution des racines cubiques ($z^3 = -8i$)
+L'équation s'annule si $z - 3i = 0 \implies z = 3i$ ou si $z^3 + 8i = 0 \implies z^3 = -8i$.
+On remarque que $-8i = (2i)^3$. L'équation devient $z^3 - (2i)^3 = 0$.
+En utilisant l'identité remarquable $a^3 - b^3 = (a-b)(a^2+ab+b^2)$ :
+$$z^3 - (2i)^3 = (z - 2i)(z^2 + 2iz + (2i)^2) = (z - 2i)(z^2 + 2iz - 4) = 0$$
+
+* Une racine est évidente : **$z_0 = 2i$**.
+* Pour le polynôme du second degré $z^2 + 2iz - 4 = 0$ :
+  $\Delta = (2i)^2 - 4(1)(-4) = -4 + 16 = 12$.
+  $\sqrt{\Delta} = \sqrt{12} = 2\sqrt{3}$.
+
+Les deux autres racines sont :
+* $z_1 = \frac{-2i - 2\sqrt{3}}{2} = -\sqrt{3} - i$
+* $z_2 = \frac{-2i + 2\sqrt{3}}{2} = \sqrt{3} - i$
+
+## 3. Forme trigonométrique et exponentielle
+**Pour $z_1 = -\sqrt{3} - i$ :**
+* Module : $|z_1| = \sqrt{(-\sqrt{3})^2 + (-1)^2} = \sqrt{3 + 1} = \sqrt{4} = 2$.
+* Argument $\theta$ : $\begin{cases} \cos \theta = \frac{-\sqrt{3}}{2} \\ \sin \theta = \frac{-1}{2} \end{cases} \implies \theta = \frac{7\pi}{6} \text{ (ou } -\frac{5\pi}{6} \text{)}$
+* Forme trigo : $z_1 = 2\left(\cos \frac{7\pi}{6} + i\sin \frac{7\pi}{6}\right)$
+* Forme exponentielle : $z_1 = 2e^{i\frac{7\pi}{6}}$
+
+**Pour $z_2 = \sqrt{3} - i$ :**
+* Module : $|z_2| = 2$.
+* Argument $\theta$ : $\begin{cases} \cos \theta = \frac{\sqrt{3}}{2} \\ \sin \theta = \frac{-1}{2} \end{cases} \implies \theta = -\frac{\pi}{6} \text{ (ou } \frac{11\pi}{6} \text{)}$
+* Forme trigo : $z_2 = 2\left(\cos \frac{11\pi}{6} + i\sin \frac{11\pi}{6}\right)$
+* Forme exponentielle : $z_2 = 2e^{-i\frac{\pi}{6}}$
+
+---
+
+### Modélisation Interactive : Le Triangle des Racines Cubiques
+Les racines de l'équation $z^3 = -8i$ que tu viens de calculer ($2i, -\sqrt{3}-i, \sqrt{3}-i$) ont une propriété géométrique fascinante dans le plan complexe : elles forment un triangle équilatéral parfait inscrit dans un cercle de rayon 2. Voici la visualisation :
+
+```json?chameleon
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D Cartesian complex plane visualizing the roots of z^3 = -8i forming an equilateral triangle.\nData State: The roots are z0 = 2i (0, 2), z1 = -sqrt(3)-i (-1.732, -1), and z2 = sqrt(3)-i (1.732, -1). All lie on a circle of radius R=2 centered at the origin.\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) 'Racines z0, z1, z2', 2) 'Cercle circonscrit (R=2)', 3) 'Triangle équilatéral'.\nVisuals/Behavior: X-axis domain [-3, 3], Y-axis domain [-3, 3]. Draw a clean grid with axes labeled 'Ré' and 'Im'. Plot the 3 roots as distinct bold dots (e.g., dark blue) with labels 'z0 = 2i', 'z1 = -√3-i', 'z2 = √3-i'. When 'Cercle circonscrit' is checked, draw a dashed red circle of radius 2 centered at (0,0). When 'Triangle' is checked, draw semi-transparent blue lines connecting z0-z1-z2-z0 to highlight the equilateral shape. Smooth CSS transitions.","id":"im_9f5684fc5b5a180f"}}
+--------------------------------------------------------------------------------
+Chapitre 7 : Analyse (Problème Type Bac 2004)
+Énoncé : Soit f définie sur ]0,+∞[ par f(x)=x 
+2
+ lnx+ 
+x
+8
+​
+  (Unité graphique : 2 cm).
+Partie A : Étude de la fonction auxiliaire g
+Soit g définie sur ]0,+∞[ par g(x)=2x 
+3
+ lnx+x 
+3
+ −8.
+1. a) Calculer les limites de g en 0 
++
+  et en +∞ :
+lim 
+x→0 
++
+ 
+​
+ g(x)=lim 
+x→0 
++
+ 
+​
+ (2x 
+3
+ lnx+x 
+3
+ −8) Par les croissances comparées, lim 
+x→0 
++
+ 
+​
+ x 
+3
+ lnx=0. Comme lim 
+x→0 
++
+ 
+​
+ x 
+3
+ =0, on obtient par somme :
+x→0 
++
+ 
+lim
+​
+ g(x)=−8
+lim 
+x→+∞
+​
+ g(x)=lim 
+x→+∞
+​
+ x 
+3
+ (2lnx+1)−8 Comme lim 
+x→+∞
+​
+ x 
+3
+ =+∞ et lim 
+x→+∞
+​
+ (2lnx+1)=+∞, par produit et somme :
+x→+∞
+lim
+​
+ g(x)=+∞
+b) Calculer g 
+′
+ (x) et étudier son signe : On utilise (uv) 
+′
+ =u 
+′
+ v+uv 
+′
+  pour le terme 2x 
+3
+ lnx.
+g 
+′
+ (x)=[6x 
+2
+ lnx+2x 
+3
+ ( 
+x
+1
+​
+ )]+3x 
+2
+ −0
+g 
+′
+ (x)=6x 
+2
+ lnx+2x 
+2
+ +3x 
+2
+ =6x 
+2
+ lnx+5x 
+2
+ 
+En factorisant par x 
+2
+  :
+g 
+′
+ (x)=x 
+2
+ (6lnx+5)
+Étude du signe : Pour tout x∈]0,+∞[, x 
+2
+ >0. Le signe de g 
+′
+ (x) dépend donc uniquement de 6lnx+5. 6lnx+5=0⟹lnx=− 
+6
+5
+​
+ ⟹x=e 
+−5/6
+ .
+Si x∈]0,e 
+−5/6
+ [, 6lnx+5<0⟹g 
+′
+ (x)<0.
+Si x∈]e 
+−5/6
+ ,+∞[, 6lnx+5>0⟹g 
+′
+ (x)>0.
+c) Tableau de variation de g : On calcule la valeur du minimum local : g(e 
+−5/6
+ )=2(e 
+−5/6
+ ) 
+3
+ (− 
+6
+5
+​
+ )+(e 
+−5/6
+ ) 
+3
+ −8=2e 
+−5/2
+ (− 
+6
+5
+​
+ )+e 
+−5/2
+ −8 g(e 
+−5/6
+ )=− 
+3
+5
+​
+ e 
+−5/2
+ + 
+3
+3
+​
+ e 
+−5/2
+ −8=− 
+3
+2
+​
+ e 
+−5/2
+ −8
+x
+0
+e 
+−5/6
+ 
++∞
+g 
+′
+ (x)
+∣
+−
+0
+g(x)
+−8
+↘(− 
+3
+2
+​
+ e 
+−5/2
+ −8)↗
++∞
+d) Théorème des Valeurs Intermédiaires (TVI) : Montrons qu'il existe un unique réel α∈]1,2[ tel que g(α)=0. Sur l'intervalle ]1,2[, la fonction g est continue et strictement croissante.
+g(1)=2(1) 
+3
+ ln(1)+1 
+3
+ −8=0+1−8=−7<0
+g(2)=2(2) 
+3
+ ln(2)+2 
+3
+ −8=16ln2+8−8=16ln2>0
+Comme g(1)×g(2)<0, d'après le TVI, l'équation g(x)=0 admet une solution unique α∈]1,2[.
+e) Déduction du signe de g(x) :
+∀x∈]0,α[,g(x)<0
+∀x∈]α,+∞[,g(x)>0
+Pour x=α,g(α)=0
+--------------------------------------------------------------------------------
+Modélisation Interactive : La fonction auxiliaire g(x) et le TVI
+Pour que tu puisses bien visualiser comment la fonction descend vers son minimum avant de remonter et de croiser l'axe des abscisses (la racine α), voici le graphe de la fonction g(x) :
+{
+  "component": "LlmGeneratedComponent",
+  "props": {
+     "height": "500px",
+     "prompt": "Objective: Create an interactive graph for the auxiliary function g(x) = 2x^3*ln(x) + x^3 - 8 to visualize its minimum and its root (TVI) from the student's notebook.\nData State: g(x) = 2*Math.pow(x,3)*Math.log(x) + Math.pow(x,3) - 8. The minimum point is at x = Math.exp(-5/6) (approx 0.434), y approx -8.05. The root alpha is where g(x)=0 (between x=1 and x=2, approx 1.54).\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) 'Minimum local', 2) 'Racine alpha (TVI)', 3) 'Zone g(x) > 0'.\nVisuals/Behavior: X-axis domain [0, 2.5], Y-axis domain [-10, 5]. Draw a grid and a prominent horizontal line at y=0. Plot g(x) smoothly in dark blue from x=0.01 to 2.5. When 'Minimum local' is checked, display a red dot at the minimum with a label 'x = e^(-5/6)'. When 'Racine alpha' is checked, display a green dot at the zero crossing with the label 'alpha'. When 'Zone g(x) > 0' is checked, shade the area between the curve and the x-axis from x=alpha to x=2.5 with a semi-transparent green fill. Modern styling, smooth transitions."
+  }
+}
+
+# Chapitre 7 : Analyse (Suite du Problème Type Bac 2004)
+
+## Partie B : Étude de la fonction $f(x) = x^2 \ln x + \frac{8}{x}$
+*(On rappelle la fonction auxiliaire $g(x) = 2x^3 \ln x + x^3 - 8$ dont la racine est $\alpha$)*
+
+**1) Étude des branches infinies :**
+On calcule la limite de $\frac{f(x)}{x}$ en $+\infty$ :
+$$\lim_{x \to +\infty} \frac{f(x)}{x} = \lim_{x \to +\infty} \frac{x^2 \ln x + \frac{8}{x}}{x} = \lim_{x \to +\infty} \left( x \ln x + \frac{8}{x^2} \right)$$
+Comme $\lim_{x \to +\infty} x \ln x = +\infty$ et $\lim_{x \to +\infty} \frac{8}{x^2} = 0$, on obtient :
+$$\lim_{x \to +\infty} \frac{f(x)}{x} = +\infty$$
+**Conclusion :** La courbe $(C)$ admet une branche parabolique (B.P.) de direction asymptotique l'axe des ordonnées $(Oy)$ au voisinage de $+\infty$.
+
+**2) Calcul de la dérivée $f'(x)$ :**
+On utilise $(uv)' = u'v + uv'$ pour la partie $x^2 \ln x$ et $(\frac{1}{x})' = -\frac{1}{x^2}$ pour la partie $\frac{8}{x}$.
+$$f'(x) = \left( 2x \ln x + x^2 \times \frac{1}{x} \right) - \frac{8}{x^2}$$
+$$f'(x) = 2x \ln x + x - \frac{8}{x^2}$$
+On met tout au même dénominateur ($x^2$) :
+$$f'(x) = \frac{2x^3 \ln x + x^3 - 8}{x^2}$$
+On reconnaît l'expression de la fonction auxiliaire :
+$$f'(x) = \frac{g(x)}{x^2}$$
+
+**3) Tableau de variation de $f$ :**
+Pour tout $x \in ]0, +\infty[$, $x^2 > 0$. Donc $f'(x)$ prend exactement le signe de $g(x)$.
+D'après la Partie A : $g(x)$ est négative sur $]0, \alpha[$, s'annule en $\alpha$, et est positive sur $]\alpha, +\infty[$.
+
+| $x$ | $0$ | $\alpha$ | $+\infty$ |
+| :--- | :--- | :---: | ---: |
+| $f'(x)$ | $\|$ | $-$ | $0$ | $+$ |
+| $f(x)$ | $+\infty$ | $\searrow f(\alpha) \nearrow$ | $+\infty$ |
+
+**4) Expression de $f(\alpha)$ :**
+Montrons que $f(\alpha) = \frac{24 - \alpha^3}{2\alpha}$ (ou similaire selon la demande de l'énoncé).
+On sait que $g(\alpha) = 0 \implies 2\alpha^3 \ln \alpha + \alpha^3 - 8 = 0$.
+On isole $\ln \alpha$ : 
+$$2\alpha^3 \ln \alpha = 8 - \alpha^3 \implies \ln \alpha = \frac{8 - \alpha^3}{2\alpha^3}$$
+On remplace $\ln \alpha$ dans l'expression de $f(\alpha)$ :
+$$f(\alpha) = \alpha^2 \left( \frac{8 - \alpha^3}{2\alpha^3} \right) + \frac{8}{\alpha}$$
+$$f(\alpha) = \frac{8 - \alpha^3}{2\alpha} + \frac{16}{2\alpha}$$
+$$f(\alpha) = \frac{24 - \alpha^3}{2\alpha}$$
+
+**5) Calcul de l'intégrale $I = \int_1^\alpha f(x) \, dx$ :**
+$$I = \int_1^\alpha \left( x^2 \ln x + \frac{8}{x} \right) \, dx = \int_1^\alpha x^2 \ln x \, dx + \int_1^\alpha \frac{8}{x} \, dx$$
+Soit $I_1 = \int_1^\alpha x^2 \ln x \, dx$. On utilise une Intégration Par Parties (IPP) :
+Posons $u = \ln x \implies u' = \frac{1}{x}$ et $v' = x^2 \implies v = \frac{x^3}{3}$.
+$$I_1 = \left[ \frac{x^3}{3} \ln x \right]_1^\alpha - \int_1^\alpha \left( \frac{x^3}{3} \times \frac{1}{x} \right) \, dx$$
+$$I_1 = \frac{\alpha^3}{3} \ln \alpha - \int_1^\alpha \frac{x^2}{3} \, dx$$
+$$I_1 = \frac{\alpha^3}{3} \ln \alpha - \left[ \frac{x^3}{9} \right]_1^\alpha = \frac{\alpha^3}{3} \ln \alpha - \frac{\alpha^3}{9} + \frac{1}{9}$$
+La deuxième partie de l'intégrale est directe : $\int_1^\alpha \frac{8}{x} \, dx = [8 \ln x]_1^\alpha = 8 \ln \alpha - 0$.
+Donc :
+$$I = \frac{\alpha^3}{3} \ln \alpha - \frac{\alpha^3}{9} + \frac{1}{9} + 8 \ln \alpha$$
+*(On peut ensuite factoriser par $\ln \alpha$ et utiliser la relation $\ln \alpha = \frac{8-\alpha^3}{2\alpha^3}$ pour n'avoir que des $\alpha$ dans le résultat final, comme fait dans la suite du cahier).*
+
+***
+
+# Chapitre 9 : Analyse (Étude de Raccordement en Zéro)
+
+**Énoncé :**
+On considère la fonction numérique $f$ définie sur $[0, +\infty[$ par :
+$\begin{cases} f(x) = \frac{1}{2}x^2(3 - 2\ln x) + 1 & \text{si } x > 0 \\ f(0) = 1 & \text{(valeur de raccordement)} \end{cases}$
+
+**1. Justifier que le domaine de définition est $D_f = [0, +\infty[$ :**
+Pour $x > 0$, la fonction $\ln x$ est définie, donc $f(x)$ est définie sur $]0, +\infty[$.
+L'énoncé nous donne explicitement la valeur pour $x = 0$ ($f(0) = 1$).
+Donc la fonction est bien définie sur $D_f = [0, +\infty[$.
+
+**2. a) Prouver que $f$ est continue en $x_0 = 0$ :**
+Il faut vérifier que $\lim_{x \to 0^+} f(x) = f(0)$.
+$$\lim_{x \to 0^+} f(x) = \lim_{x \to 0^+} \left[ \frac{1}{2}x^2(3 - 2\ln x) + 1 \right]$$
+On développe pour lever l'indétermination :
+$$\lim_{x \to 0^+} f(x) = \lim_{x \to 0^+} \left( \frac{3}{2}x^2 - x^2\ln x + 1 \right)$$
+Or, par le théorème des croissances comparées, on sait que $\lim_{x \to 0^+} x^2\ln x = 0$. Et bien sûr $\lim_{x \to 0^+} \frac{3}{2}x^2 = 0$.
+Donc $\lim_{x \to 0^+} f(x) = 0 - 0 + 1 = 1$.
+Comme $\lim_{x \to 0^+} f(x) = f(0)$, la fonction **est continue** en $0$.
+
+**b) Étudier la dérivabilité en $x_0 = 0$ :**
+On étudie la limite du taux d'accroissement (T.A.) en $0^+$ :
+$$\lim_{x \to 0^+} \frac{f(x) - f(0)}{x - 0} = \lim_{x \to 0^+} \frac{\left[ \frac{1}{2}x^2(3 - 2\ln x) + 1 \right] - 1}{x}$$
+$$= \lim_{x \to 0^+} \frac{\frac{1}{2}x^2(3 - 2\ln x)}{x} = \lim_{x \to 0^+} \frac{1}{2}x(3 - 2\ln x)$$
+On développe :
+$$= \lim_{x \to 0^+} \left( \frac{3}{2}x - x\ln x \right)$$
+D'après les croissances comparées, $\lim_{x \to 0^+} x\ln x = 0$.
+La limite du T.A. est donc égale à $0$.
+**Conclusion :** La fonction $f$ **est dérivable** en $0$ et le nombre dérivé est $f'(0) = 0$.
+L'interprétation graphique est immédiate : la courbe représentative de $f$ admet une **demi-tangente horizontale** au point d'abscisse $0$.
+
+**3. a) Démontrer que $f'(x) = 2x(1 - \ln x)$ pour $x > 0$ :**
+On dérive en utilisant $(uv)'$ avec $u = \frac{1}{2}x^2 \implies u' = x$ et $v = 3 - 2\ln x \implies v' = -\frac{2}{x}$.
+$$f'(x) = x(3 - 2\ln x) + \frac{1}{2}x^2\left(-\frac{2}{x}\right) + 0$$
+$$f'(x) = 3x - 2x\ln x - x = 2x - 2x\ln x$$
+En factorisant par $2x$, on obtient bien :
+$$f'(x) = 2x(1 - \ln x)$$
+
+---
+
+### Modélisation Interactive : Raccordement en Zéro et Tangentes
+
+Pour que tu puisses bien visualiser l'effet d'un "raccordement par continuité" réussi, voici la modélisation de cette fonction. Tu pourras observer que la courbe "atterrit" doucement au point $(0,1)$ avec une tangente parfaitement horizontale, ce que tu viens de prouver par le calcul de dérivabilité !
+
+```json?chameleon
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive graph illustrating the smooth continuity and zero-derivative at x=0 for a specific function, along with its local maximum.\nData State: Function is f(x) = 0.5 * x^2 * (3 - 2*Math.log(x)) + 1. The domain is x >= 0. Key points are A(0, 1) [the raccordement point] and the maximum B(Math.E, f(Math.E)).\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) 'Point de raccordement A(0,1)', 2) 'Tangente horizontale en A', 3) 'Maximum local en B(e, f(e))' with its horizontal tangent.\nVisuals/Behavior: X-axis domain [-0.5, 5], Y-axis domain [0, 4]. Draw a clear grid. Plot the function f(x) smoothly in a bright blue color, generating data from x=0.001 to x=5. Manually force the point at x=0 to be exactly (0,1). When 'Point de raccordement' is active, show a red dot at (0,1) labeled 'A(0,1)'. When 'Tangente en A' is active, draw a dashed red line extending slightly rightward from y=1 to signify the demi-tangente. When 'Maximum' is checked, plot a green dot at x=Math.E (approx 2.718), y=0.5*(E^2)*(3-2)+1 = 0.5*E^2+1 (approx 4.69 - adjust Y axis to 5 if needed), with a dashed green horizontal line through it. Smooth animations and modern tooltip styling.","id":"im_23f790c4c6563949"}}
+Chapitre 7 : Analyse (Fin du problème de raccordement)
+4. Position relative et Tangente
+a) Rappel sur la forme de la fonction : On a la fonction f(x)=x+ 
+x+1
+2lnx
+​
+ . L'énoncé a fait poser h(x)= 
+x
+2lnx
+​
+ . On remarque que f(x)−x= 
+x+1
+2lnx
+​
+ .
+b) Asymptote Oblique : On calcule la limite de la différence en +∞ :
+x→+∞
+lim
+​
+ [f(x)−x]= 
+x→+∞
+lim
+​
+  
+x+1
+2lnx
+​
+ =0
+(Par croissances comparées, le polynôme au dénominateur l'emporte sur le logarithme). Conclusion : La droite (Δ) d'équation y=x est une Asymptote Oblique à la courbe (C) en +∞.
+c) Position relative de (C) par rapport à (Δ) : On étudie le signe de la différence f(x)−y= 
+x+1
+2lnx
+​
+ . Pour tout x∈]0,+∞[, on a x+1>0. Le signe de la différence dépend donc uniquement du signe de lnx.
+x
+0
+1
++∞
+Signe de lnx
+∣
+−
+0
+Position
+∣
+(C) est en dessous de (Δ)
+Point d'intersection
+3. a) Coordonnées du point d'intersection A : On résout f(x)=y⟹f(x)−x=0⟹ 
+x+1
+2lnx
+​
+ =0⟹lnx=0⟹x=1. L'ordonnée est y=x=1. Le point d'intersection est A(1,1).
+b) Équation de la tangente (T) au point A d'abscisse x 
+0
+​
+ =1 : Formule de la tangente : (T):y=f 
+′
+ (1)(x−1)+f(1)
+On sait que f(1)=1.
+Calcul de f 
+′
+ (1) :
+f 
+′
+ (x)=1+ 
+(x+1) 
+2
+ 
+x
+2
+​
+ (x+1)−2lnx×1
+​
+ 
+f 
+′
+ (1)=1+ 
+(1+1) 
+2
+ 
+2(2)−0
+​
+ =1+ 
+4
+4
+​
+ =1+1=2
+(Note : Sur la page 110757, il semble y avoir eu une petite confusion de calcul donnant f 
+′
+ (1)=1,5. Le calcul rigoureux de la dérivée donne bien f 
+′
+ (1)=2).
+Équation : y=2(x−1)+1⟹y=2x−2+1⟹y=2x−1.
+5. Calcul d'Aire
+Calcul de l'intégrale A=∫ 
+1
+e
+​
+ h(x)dx (Il s'agit de l'aire sous la fonction auxiliaire h).
+A=∫ 
+1
+e
+​
+  
+x
+2lnx
+​
+ dx
+On reconnaît la forme 2∫u 
+′
+ u avec u(x)=lnx et u 
+′
+ (x)= 
+x
+1
+​
+ . Une primitive est u 
+2
+ =(lnx) 
+2
+ .
+A=[(lnx) 
+2
+ ] 
+1
+e
+​
+ =(lne) 
+2
+ −(ln1) 
+2
+ =1 
+2
+ −0=1 u.a.
+--------------------------------------------------------------------------------
+Modélisation Interactive : Fonction f, Asymptote et Tangente
+Voici la visualisation numérique de ta courbe avec l'asymptote y=x et la tangente calculée rigoureusement au point A.
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D graph visualizing the function f(x) = x + 2ln(x)/(x+1), its oblique asymptote, and its tangent at x=1.\nData State: Curve f(x) = x + 2*Math.log(x)/(x+1). Oblique asymptote Delta: y = x. Intersection point A(1, 1). Tangent at A: y = 2x - 1.\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) Asymptote (y = x), 2) Tangente en A (y = 2x - 1), 3) Point d'intersection A(1,1).\nVisuals/Behavior: X-axis domain [0, 5], Y-axis domain [-2, 5]. Draw a clean grid. Plot f(x) smoothly in blue for x > 0.05. When 'Asymptote' is checked, draw a dashed red line y=x. When 'Tangente' is checked, draw a solid green line y=2x-1. When 'Point' is checked, place a distinct dot at (1,1) labeled 'A(1,1)'. Notice how the curve crosses the asymptote exactly at A. Ensure modern styling and smooth transitions.","id":"im_aef105293a88204b"}}
+--------------------------------------------------------------------------------
+Chapitre 10 : Nombres Complexes (Type Bac 2018)
+Partie A : Polynôme de degré 3
+Énoncé : Soit P(z)=z 
+3
+ −(4+i)z 
+2
+ +(7+i)z−4=0.
+1. a) Montrer que P(z) admet une racine réelle z 
+0
+​
+  : Soit α∈R tel que P(α)=0.
+α 
+3
+ −(4+i)α 
+2
+ +(7+i)α−4=0
+α 
+3
+ −4α 
+2
+ −iα 
+2
+ +7α+iα−4=0
+On regroupe les parties réelles et imaginaires :
+(α 
+3
+ −4α 
+2
+ +7α−4)+i(−α 
+2
+ +α)=0
+Pour que ce complexe soit nul, sa partie imaginaire doit l'être :
+−α 
+2
+ +α=0⟹α(1−α)=0⟹α=0 ou α=1
+Vérification avec α=0 : 0−0+0−4
+
+=0.
+Vérification avec α=1 : 1 
+3
+ −4(1) 
+2
+ +7(1)−4=1−4+7−4=0. Donc z 
+0
+​
+ =1 est la racine réelle.
+b) Déterminer a,b,c tels que P(z)=(z−1)(az 
+2
+ +bz+c) : Par identification (développement et égalisation des coefficients) :  
+⎩
+
+⎨
+
+⎧
+​
+  
+a=1
+b−a=−(4+i)⟹b−1=−4−i⟹b=−3−i
+−b+c=7+i⟹−(−3−i)+c=7+i⟹3+i+c=7+i⟹c=4
+−c=−4⟹c=4
+​
+  Donc : P(z)=(z−1)(z 
+2
+ −(3+i)z+4).
+2. Résoudre P(z)=0 dans C : On résout z 
+2
+ −(3+i)z+4=0. Calcul de Δ :
+Δ=(−(3+i)) 
+2
+ −4(1)(4)=(9+6i+i 
+2
+ )−16=9+6i−1−16=−8+6i
+Racines carrées de Δ : Soit d=x+iy tel que d 
+2
+ =Δ=−8+6i.  
+⎩
+
+⎨
+
+⎧
+​
+  
+x 
+2
+ −y 
+2
+ =−8
+2xy=6⟹xy>0 (m 
+e
+ˆ
+ me signe)
+x 
+2
+ +y 
+2
+ = 
+(−8) 
+2
+ +6 
+2
+ 
+
+​
+ = 
+64+36
+
+​
+ = 
+100
+
+​
+ =10
+​
+ 
+(1)+(3)⟹2x 
+2
+ =2⟹x 
+2
+ =1⟹x=±1
+(3)−(1)⟹2y 
+2
+ =18⟹y 
+2
+ =9⟹y=±3 Puisque xy>0, on choisit d=1+3i.
+Calcul des racines :
+z 
+1
+​
+ = 
+2a
+−b−d
+​
+ = 
+2
+(3+i)−(1+3i)
+​
+ = 
+2
+2−2i
+​
+ =1−i
+z 
+2
+​
+ = 
+2a
+−b+d
+​
+ = 
+2
+(3+i)+(1+3i)
+​
+ = 
+2
+4+4i
+​
+ =2+2i
+Solutions : S={1;1−i;2+2i}
+--------------------------------------------------------------------------------
+Partie B : Géométrie dans le Plan Complexe
+Dans le plan, on place les points A(1), B(2+2i) et C(1−i).
+1. Calcul du rapport complexe Z= 
+z 
+C
+​
+ −z 
+A
+​
+ 
+z 
+B
+​
+ −z 
+A
+​
+ 
+​
+  :
+Z= 
+1−i−1
+2+2i−1
+​
+ = 
+−i
+1+2i
+​
+ 
+Pour éliminer le i au dénominateur, on multiplie en haut et en bas par i :
+Z= 
+−i×i
+(1+2i)i
+​
+ = 
+−(−1)
+i+2i 
+2
+ 
+​
+ = 
+1
+−2+i
+​
+ =−2+i
+2. Calcul de l'affixe du point D pour que ABDC soit un parallélogramme : Le quadrilatère ABDC est un parallélogramme si et seulement si  
+AB
+
+ = 
+CD
+
+ . En termes d'affixes, cela donne :
+z 
+B
+​
+ −z 
+A
+​
+ =z 
+D
+​
+ −z 
+C
+​
+ 
+On isole z 
+D
+​
+  :
+z 
+D
+​
+ =z 
+B
+​
+ −z 
+A
+​
+ +z 
+C
+​
+ 
+z 
+D
+​
+ =(2+2i)−1+(1−i)=2+2i−1+1−i
+z 
+D
+​
+ =2+i
+Modélisation Interactive : Le Parallélogramme ABDC
+Voici le plan complexe avec les 4 points que tu viens de calculer, formant parfaitement le parallélogramme ABDC !
+{
+  "component": "LlmGeneratedComponent",
+  "props": {
+     "height": "600px",
+     "prompt": "Objective: Create an interactive Complex Plane graph showing points A, B, C, D and the parallelogram ABDC based on the student's Bac 2018 problem.\nData State: Points are A(1, 0), B(2, 2), C(1, -1), and D(2, 1).\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) Points A, B, C, 2) Point D (Calculated), 3) Parallélogramme ABDC.\nVisuals/Behavior: X-axis domain [-1, 4], Y-axis domain [-2, 3]. Clear grid with Re/Im labels. Plot A(1), B(2+2i), C(1-i) as distinct blue dots with labels. When 'Point D' is checked, plot D(2+i) as a red dot. When 'Parallélogramme' is checked, draw the polygon connecting A -> B -> D -> C -> A with a semi-transparent blue fill and solid borders to prove the geometric shape calculated via vectors (AB = CD)."
+  }
+}
+Chapitre 11 : Analyse (Problème Complet Exponentielle)
+Énoncé : Soit la fonction f définie sur R par f(x)=(x+1)e 
+−x
+ .
+1. Limites et Asymptote
+En −∞ : lim 
+x→−∞
+​
+ (x+1)=−∞ et lim 
+x→−∞
+​
+ e 
+−x
+ =+∞. Par produit : lim 
+x→−∞
+​
+ f(x)=−∞.
+En +∞ : On développe l'expression : f(x)=xe 
+−x
+ +e 
+−x
+ = 
+e 
+x
+ 
+x
+​
+ + 
+e 
+x
+ 
+1
+​
+ . Par croissances comparées, on sait que lim 
+x→+∞
+​
+  
+e 
+x
+ 
+x
+​
+ =0. De plus, lim 
+x→+∞
+​
+  
+e 
+x
+ 
+1
+​
+ =0. Par somme : lim 
+x→+∞
+​
+ f(x)=0. Conclusion : La courbe (C) admet une Asymptote Horizontale (A.H) d'équation y=0 (l'axe des abscisses) au voisinage de +∞.
+2. Dérivée et Tableau de Variation
+On utilise la forme de dérivation (uv) 
+′
+ =u 
+′
+ v+uv 
+′
+  avec u=x+1⟹u 
+′
+ =1 et v=e 
+−x
+ ⟹v 
+′
+ =−e 
+−x
+ .
+f 
+′
+ (x)=1⋅e 
+−x
+ +(x+1)(−e 
+−x
+ )
+f 
+′
+ (x)=e 
+−x
+ (1−(x+1))=e 
+−x
+ (1−x−1)
+f 
+′
+ (x)=−xe 
+−x
+ 
+Étude du signe : Pour tout x∈R, e 
+−x
+ >0. Le signe de f 
+′
+ (x) dépend donc uniquement du signe de −x.
+f 
+′
+ (x)>0⟹−x>0⟹x<0.
+f 
+′
+ (x)<0⟹−x<0⟹x>0.
+x
+−∞
+0
++∞
+f 
+′
+ (x)
++
+0
+−
+f(x)
+−∞
+↗1↘
+0
+3. Tangentes remarquables
+Au point d'abscisse x 
+0
+​
+ =0 : f(0)=1 et f 
+′
+ (0)=0. Équation : (T 
+0
+​
+ ):y=f 
+′
+ (0)(x−0)+f(0)⟹y=1. (C'est une tangente horizontale au sommet de la courbe).
+Au point d'abscisse x 
+1
+​
+ =−1 : f(−1)=(−1+1)e 
+1
+ =0 et f 
+′
+ (−1)=−(−1)e 
+−(−1)
+ =e. Équation : (T 
+1
+​
+ ):y=e(x−(−1))+0⟹y=ex+e.
+4. Calcul d'Aire (Intégration par parties)
+Calculons l'aire A du domaine délimité par la courbe, l'axe des abscisses et les droites d'équations x=−1 et x=0.
+A=∫ 
+−1
+0
+​
+ (x+1)e 
+−x
+ dx
+Posons :
+u=x+1⟹u 
+′
+ =1
+v 
+′
+ =e 
+−x
+ ⟹v=−e 
+−x
+ 
+On applique la formule de l'IPP ∫u 
+′
+ v=[uv]−∫uv 
+′
+  :
+A=[−(x+1)e 
+−x
+ ] 
+−1
+0
+​
+ −∫ 
+−1
+0
+​
+ 1⋅(−e 
+−x
+ )dx
+A=(−(0+1)e 
+0
+ −(−(−1+1)e 
+1
+ ))+∫ 
+−1
+0
+​
+ e 
+−x
+ dx
+A=(−1−0)+[−e 
+−x
+ ] 
+−1
+0
+​
+ 
+A=−1+(−e 
+0
+ −(−e 
+1
+ ))=−1−1+e
+A=e−2 u.a.
+Modélisation Interactive : La courbe et son Aire
+Voici la représentation graphique de cette fonction exponentielle. Tu peux afficher l'aire que tu viens de calculer (entre x=−1 et x=0) pour visualiser concrètement le résultat géométrique de ton IPP !
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive 2D graph visualizing the exponential function f(x) = (x+1)*exp(-x), its maximum, horizontal asymptote, and the calculated integral area.\nData State: Curve f(x) = (x+1)*Math.exp(-x). Root at B(-1,0). Maximum at A(0,1). Horizontal asymptote y=0 for x>0. Integral area bounded by x=-1, x=0, and the curve.\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) Maximum local A(0,1) & Tangente, 2) Asymptote horizontale (y=0), 3) Aire sous la courbe [-1, 0].\nVisuals/Behavior: X-axis domain [-2, 5], Y-axis domain [-1, 2]. Draw a clean grid. Plot f(x) smoothly in deep red (compute values from x=-2 to 5). When 'Maximum' is checked, plot a distinct dot at (0,1) with a dashed horizontal line y=1. When 'Asymptote' is checked, highlight the positive x-axis with a dashed blue line. When 'Aire' is checked, fill the region between x=-1 and x=0 under the curve with a semi-transparent green color. Ensure smooth CSS transitions and clear axis labels.","id":"im_41221ff3cbc33b85"}}
+--------------------------------------------------------------------------------
+Chapitre 12 : Suites Numériques (Suite Arithmético-Géométrique)
+Énoncé : Soit la suite (u 
+n
+​
+ ) définie par u 
+0
+​
+ =2 et u 
+n+1
+​
+ = 
+2
+1
+​
+ u 
+n
+​
+ +3. Soit la suite auxiliaire (v 
+n
+​
+ ) définie par v 
+n
+​
+ =u 
+n
+​
+ −6.
+1. Montrer que (v 
+n
+​
+ ) est une suite géométrique
+Pour montrer qu'une suite est géométrique, on exprime v 
+n+1
+​
+  en fonction de v 
+n
+​
+  :
+v 
+n+1
+​
+ =u 
+n+1
+​
+ −6
+On remplace u 
+n+1
+​
+  par son expression de récurrence :
+v 
+n+1
+​
+ =( 
+2
+1
+​
+ u 
+n
+​
+ +3)−6
+v 
+n+1
+​
+ = 
+2
+1
+​
+ u 
+n
+​
+ −3
+On factorise par  
+2
+1
+​
+  (pour faire réapparaître l'expression de v 
+n
+​
+ ) :
+v 
+n+1
+​
+ = 
+2
+1
+​
+ (u 
+n
+​
+ −6)
+On reconnaît l'expression initiale de v 
+n
+​
+  :
+v 
+n+1
+​
+ = 
+2
+1
+​
+ v 
+n
+​
+ 
+Conclusion : La suite (v 
+n
+​
+ ) est une suite géométrique de raison q= 
+2
+1
+​
+ . Son premier terme est v 
+0
+​
+ =u 
+0
+​
+ −6=2−6=−4.
+2. Expression de u 
+n
+​
+  en fonction de n
+Puisque (v 
+n
+​
+ ) est géométrique, sa forme explicite est :
+v 
+n
+​
+ =v 
+0
+​
+ ×q 
+n
+ =−4( 
+2
+1
+​
+ ) 
+n
+ 
+Or, on sait par définition que v 
+n
+​
+ =u 
+n
+​
+ −6⟹u 
+n
+​
+ =v 
+n
+​
+ +6. En remplaçant v 
+n
+​
+  par la formule trouvée, on obtient l'expression explicite de u 
+n
+​
+  :
+u 
+n
+​
+ =−4( 
+2
+1
+​
+ ) 
+n
+ +6
+3. Convergence de la suite (u 
+n
+​
+ )
+On étudie la limite de la suite u 
+n
+​
+  quand n tend vers +∞. Puisque la raison de la suite géométrique q= 
+2
+1
+​
+  est strictement comprise entre −1 et 1 (−1< 
+2
+1
+​
+ <1), le théorème de convergence nous dit que :
+n→+∞
+lim
+​
+ ( 
+2
+1
+​
+ ) 
+n
+ =0
+Par conséquent, en appliquant cette limite à l'expression explicite :
+n→+∞
+lim
+​
+ u 
+n
+​
+ =−4(0)+6=6
+Conclusion : La suite (u 
+n
+​
+ ) est convergente et sa limite est 6.
+Chapitre 12 : Suites Numériques (Démonstration par Récurrence)
+4. Principe de Récurrence
+Pour démontrer qu'une propriété P(n) est vraie pour tout entier n≥n 
+0
+​
+ , on procède en 3 étapes :
+Initialisation : On vérifie que la propriété est vraie pour le premier terme (souvent n=0 ou n=1).
+Hérédité : On suppose que P(k) est vraie pour un certain entier k≥n 
+0
+​
+  (c'est l'Hypothèse de Récurrence). On démontre alors que P(k+1) est vraie.
+Conclusion : Par le principe de récurrence, P(n) est vraie pour tout entier n≥n 
+0
+​
+ .
+Exemple d'application (Type Bac) : Soit la suite (u 
+n
+​
+ ) définie par u 
+0
+​
+ =1 et, pour tout entier naturel n, u 
+n+1
+​
+ = 
+2u 
+n
+​
+ +3
+
+​
+ . Démontrons par récurrence que pour tout n∈N, on a : 0≤u 
+n
+​
+ ≤3.
+Initialisation : Pour n=0, u 
+0
+​
+ =1. On a bien 0≤1≤3. Donc la propriété est vraie au rang 0.
+Hérédité : Supposons que pour un entier k≥0, on ait 0≤u 
+k
+​
+ ≤3. Montrons que 0≤u 
+k+1
+​
+ ≤3. On part de l'hypothèse de récurrence et on construit u 
+k+1
+​
+  :
+0≤u 
+k
+​
+ ≤3
+On multiplie par 2 :
+0≤2u 
+k
+​
+ ≤6
+On ajoute 3 :
+3≤2u 
+k
+​
+ +3≤9
+La fonction racine carrée étant strictement croissante sur [0,+∞[, on applique la racine :
+3
+
+​
+ ≤ 
+2u 
+k
+​
+ +3
+
+​
+ ≤ 
+9
+
+​
+ 
+3
+
+​
+ ≤u 
+k+1
+​
+ ≤3
+Or, on sait que 0≤ 
+3
+
+​
+ . Par transitivité, on a donc bien :
+0≤u 
+k+1
+​
+ ≤3
+L'hérédité est prouvée.
+Conclusion : La propriété est initialisée et héréditaire, donc pour tout n∈N, 0≤u 
+n
+​
+ ≤3.
+--------------------------------------------------------------------------------
+Chapitre 13 : Nombres Complexes (Transformations Usuelles)
+Soient M un point d'affixe z et M 
+′
+  son image d'affixe z 
+′
+ . Soit Ω un point d'affixe ω.
+1. Rappel des Écritures Complexes
+Transformation
+Écriture complexe
+Éléments caractéristiques
+Translation de vecteur  
+u
+
+ (b)
+z 
+′
+ =z+b
+Vecteur  
+u
+
+  d'affixe b
+Homothétie de centre Ω et rapport k∈R 
+∗
+ 
+z 
+′
+ −ω=k(z−ω)
+Centre Ω(ω) et rapport k
+Rotation de centre Ω et d'angle θ
+z 
+′
+ −ω=e 
+iθ
+ (z−ω)
+Centre Ω(ω) et angle θ
+2. Détermination de la nature d'une transformation
+Règle générale : Une transformation complexe s'écrit sous la forme z 
+′
+ =az+b avec a∈C 
+∗
+ .
+Si a=1 : C'est une translation de vecteur d'affixe b.
+Si a∈R 
+∗
+ ∖{1} : C'est une homothétie de rapport k=a.
+Si ∣a∣=1 (et a
+
+=1) : C'est une rotation d'angle θ=arg(a).
+Dans les cas d'homothétie et de rotation, le centre Ω est le point invariant tel que :
+ω=aω+b⟹ω= 
+1−a
+b
+​
+ 
+Exemple d'application : Soit la transformation S d'écriture complexe z 
+′
+ =−2z+3i. Déterminer sa nature et ses éléments caractéristiques.
+On identifie a=−2. Puisque a∈R 
+∗
+ ∖{1}, S est une homothétie de rapport k=−2.
+On cherche l'affixe ω du centre Ω :
+ω= 
+1−a
+b
+​
+ = 
+1−(−2)
+3i
+​
+ = 
+1+2
+3i
+​
+ = 
+3
+3i
+​
+ =i
+Conclusion : S est l'homothétie de centre Ω(i) et de rapport k=−2.
+--------------------------------------------------------------------------------
+Modélisation Interactive : L'Homothétie de rapport négatif
+Une homothétie de rapport négatif (comme k=−2 dans ton exemple) inverse le sens des vecteurs. Voici une modélisation pour que tu puisses voir comment le point M 
+′
+  est "projeté" de l'autre côté du centre Ω, deux fois plus loin !
+{"component":"LlmGeneratedComponent","props":{"height":"600px","prompt":"Objective: Create an interactive Complex Plane visualizing the transformation z' = -2z + 3i, which is an Homothety of center Omega(i) and ratio k=-2.\nData State: Center Omega at (0, 1). Initial point M is at (1, 1). Transformed point M' = -2*(M - Omega) + Omega, which results in M' at (-2, 1).\nStrategy: Standard Cartesian Layout using D3.js.\nInputs: Toggle checkboxes for 1) 'Centre Omega(i)', 2) 'Point M(1+i) et Vecteur directeur', 3) 'Image M' et Vecteur transformé (k=-2)'.\nVisuals/Behavior: X-axis [-4, 3], Y-axis [-1, 3]. Draw a clean mathematical grid. Plot Omega(0,1) as a distinct red dot. Plot M(1,1) as a blue dot. Plot M'(-2,1) as a green dot. When 'Point M' is checked, draw a dashed blue arrow from Omega to M. When 'Image M'' is checked, draw a bold green arrow from Omega to M'. The visual should clearly demonstrate that the green vector is exactly twice the length of the blue vector and points in the exact opposite direction (180 degrees) due to the negative ratio k=-2. Modern styling, tooltips on hover.","id":"im_c8f6cc75a639f9bb"}}
+--------------------------------------------------------------------------------
+Chapitre 14 : Équations Différentielles (Premier Ordre)
+1. Forme générale y 
+′
+ =ay+b
+Une équation différentielle du premier ordre à coefficients constants est de la forme y 
+′
+ =ay+b (où a,b∈R et a
+
+=0).
+L'inconnue y n'est pas un nombre, mais une fonction définie et dérivable sur un intervalle.
+y 
+′
+  désigne la dérivée de cette fonction.
+2. Solution générale
+La solution générale sur R de l'équation y 
+′
+ =ay+b est l'ensemble des fonctions :
+f(x)=Ce 
+ax
+ − 
+a
+b
+​
+ 
+(où C est une constante réelle arbitraire qui dépend des conditions initiales de l'exercice).
+Exemple de résolution : Résoudre l'équation différentielle (E):2y 
+′
+ −4y=6 avec la condition initiale y(0)=1.
+Étape 1 : Mettre sous la forme y 
+′
+ =ay+b
+2y 
+′
+ =4y+6
+y 
+′
+ =2y+3
+On identifie a=2 et b=3.
+Étape 2 : Écrire la solution générale
+y(x)=Ce 
+2x
+ − 
+2
+3
+​
+ (C∈R)
+Étape 3 : Trouver la solution particulière avec la condition initiale On sait que y(0)=1. On remplace x par 0 :
+Ce 
+2(0)
+ − 
+2
+3
+​
+ =1
+C×1−1,5=1
+C=1+1,5=2,5= 
+2
+5
+​
+ 
+Conclusion : La solution particulière de l'équation différentielle est :
+y(x)= 
+2
+5
+​
+ e 
+2x
+ − 
+2
+3
+​

@@ -163,6 +163,11 @@ export function sanitizeUserData(user = {}, settings = {}) {
       .map((subjectId) => String(subjectId || '').trim())
       .filter(Boolean)
   )];
+  const unlockedSubjectIds = [...new Set(
+    (Array.isArray(user.unlockedSubjectIds) ? user.unlockedSubjectIds : [])
+      .map((subjectId) => String(subjectId || '').trim())
+      .filter(Boolean)
+  )];
   const safeAverageScore = clampRange(user.averageScore ?? (user.globalScore ? Number(user.globalScore) / 5 : 0), 0, 20);
   const safeFire = clampFloor(user.fire ?? user.streak);
   const caps = normalizeScoreCaps(settings?.scoreCaps);
@@ -205,6 +210,7 @@ export function sanitizeUserData(user = {}, settings = {}) {
     history: Array.isArray(user.history) ? user.history : [],
     badges: Array.isArray(user.badges) ? user.badges : [],
     blockedSubjectIds,
+    unlockedSubjectIds,
     selectedClass: user.selectedClass || 'Terminale',
     profileName: user.profileName || 'Élève BacBooster',
     avatar: user.avatar || '',

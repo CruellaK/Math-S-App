@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { storage } from '../lib/store';
-import { CLASSES, createDefaultTimingDefaults, createSubjectShell, normalizeClassName, SUBJECT_ICON_OPTIONS } from '../lib/constants';
+import { CLASSES, createDefaultClassDefaults, createDefaultTimingDefaults, createSubjectShell, normalizeClassName, SUBJECT_ICON_OPTIONS } from '../lib/constants';
+import { computeSubjectAccess } from '../lib/subjectAccess';
 import {
   applyAdminImportToSubject,
   CONTENT_TYPE_OPTIONS,
@@ -23,7 +24,7 @@ import { ADMIN_DOWNLOADABLE_EXAMPLES } from '../lib/adminExampleCatalog';
 import {
   Shield, Upload, Download, FileText, Trash2,
   Copy, Check, BookOpen, Brain, AlertCircle, GraduationCap, Layers, Settings2,
-  User, Save, RefreshCw
+  User, Save, RefreshCw, Users, Lock, Unlock
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════
@@ -500,8 +501,11 @@ export default function AdminView() {
   const [cloudAccountDetailLoadingId, setCloudAccountDetailLoadingId] = useState('');
   const [cloudAccountDetailError, setCloudAccountDetailError] = useState('');
   const contentFileRef = useRef(null);
+  const bulkContentFileRef = useRef(null);
   const backupFileRef = useRef(null);
   const avatarInputRef = useRef(null);
+  const [isBulkImporting, setIsBulkImporting] = useState(false);
+  const [bulkImportSummary, setBulkImportSummary] = useState(null);
   const [backupRestoreMode, setBackupRestoreMode] = useState('overwrite');
   const [pendingBackupScope, setPendingBackupScope] = useState(null);
 
@@ -1216,6 +1220,249 @@ export default function AdminView() {
     contentFileRef.current?.click();
   };
 
+  const slugifyForExamples = (value) => String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const currentSubjectSlug = slugifyForExamples(currentSubject?.name || '');
+  const matchingExamplePackPrefixes = (() => {
+    if (!currentSubjectSlug) return [];
+    const prefixes = new Set([currentSubjectSlug]);
+    if (currentSubjectSlug === 'francais' || currentSubjectSlug.startsWith('francais')) {
+      prefixes.add('francais');
+      prefixes.add('français');
+    }
+    if (currentSubjectSlug === 'anglais' || currentSubjectSlug.startsWith('anglais') || currentSubjectSlug.startsWith('english')) {
+      prefixes.add('anglais');
+      prefixes.add('english');
+    }
+    return Array.from(prefixes);
+  })();
+
+  const matchingExamplePacks = ADMIN_DOWNLOADABLE_EXAMPLES.filter((entry) => {
+    if (!matchingExamplePackPrefixes.length) return false;
+    const entryId = String(entry?.id || '').toLowerCase();
+    return matchingExamplePackPrefixes.some((prefix) => entryId.startsWith(`${prefix}-`));
+  });
+  const matchingExampleFilesCount = matchingExamplePacks.reduce(
+    (acc, entry) => acc + (Array.isArray(entry?.files) ? entry.files.length : 0),
+    0,
+  );
+
+  const handleImportLanguageExamples = async () => {
+    if (!currentSubject) {
+      showToast('Sélectionnez d’abord une matière cible', 'error');
+      return;
+    }
+    if (!matchingExamplePacks.length) {
+      showToast(`Aucun exemple JSON ne correspond à la matière "${currentSubject.name}". Renomme la matière en Français/Anglais ou utilise l’import multi-fichiers.`, 'error');
+      return;
+    }
+    const total = matchingExampleFilesCount;
+    const confirmed = window.confirm(`Importer ${total} fichier(s) d’exemples (${matchingExamplePacks.length} pack(s)) dans la matière "${currentSubject.name}" en mode ${importMode === 'overwrite' ? 'Écraser' : 'Fusionner'} ?`);
+    if (!confirmed) return;
+
+    setIsBulkImporting(true);
+    setValidationErrors([]);
+    setBulkImportSummary(null);
+
+    const successes = [];
+    const failures = [];
+    let workingSubject = currentSubject;
+    const overwrite = importMode === 'overwrite';
+
+    const kindOrder = (kind) => {
+      if (!kind) return 99;
+      if (kind.startsWith('parcours_')) return 0;
+      if (kind.endsWith('_enonce')) return 1;
+      if (kind.endsWith('_brouillon')) return 2;
+      if (kind.endsWith('_traitement')) return 3;
+      if (kind.endsWith('_traitement_question')) return 4;
+      if (kind.startsWith('quiz_mode_')) return 5;
+      return 99;
+    };
+
+    const queue = [];
+    matchingExamplePacks.forEach((entry) => {
+      (entry.files || []).forEach((file) => {
+        const payload = file?.payload;
+        if (!payload) return;
+        queue.push({
+          name: file?.filename || file?.label || `${entry.id}-${file?.payload?.kind || 'item'}`,
+          payload,
+        });
+      });
+    });
+
+    queue.sort((a, b) => {
+      const ka = kindOrder(a.payload?.kind);
+      const kb = kindOrder(b.payload?.kind);
+      if (ka !== kb) return ka - kb;
+      const ca = Number(a.payload?.chapterNumber) || 0;
+      const cb = Number(b.payload?.chapterNumber) || 0;
+      return ca - cb;
+    });
+
+    for (const { name, payload } of queue) {
+      try {
+        const detectedKind = payload && typeof payload.kind === 'string' ? payload.kind : null;
+        if (!detectedKind) throw new Error('Champ kind manquant');
+
+        const validation = validateAdminPayload(payload);
+        if (!validation.valid) {
+          throw new Error(validation.errors[0] || 'JSON non conforme au schéma');
+        }
+
+        const result = applyAdminImportToSubject(workingSubject, payload, {
+          overwrite,
+          targetChapterNumber: Number(payload.chapterNumber) || 1,
+          targetChapterTitle: payload.chapterTitle || `Chapitre ${Number(payload.chapterNumber) || 1}`,
+          targetItemTitle: payload.title || '',
+        });
+        workingSubject = result.subject;
+        successes.push({ name, kind: detectedKind, message: result.message });
+      } catch (err) {
+        failures.push({ name, reason: err.message });
+      }
+    }
+
+    if (successes.length > 0) {
+      try {
+        await persistSubjectForClass(workingSubject, `${successes.length} exemple(s) importé(s) dans ${currentSubject.name}`);
+        playSpecial('success');
+      } catch (err) {
+        showToast(`Erreur de sauvegarde: ${err.message}`, 'error');
+        playSpecial('error');
+      }
+    } else {
+      playSpecial('error');
+    }
+
+    setBulkImportSummary({
+      total: queue.length,
+      successes,
+      failures,
+      subjectName: currentSubject?.name || '',
+      mode: overwrite ? 'overwrite' : 'merge',
+      source: `Exemples JSON (${matchingExamplePacks.length} pack(s))`,
+    });
+    setIsBulkImporting(false);
+  };
+
+  const handleStartBulkImport = () => {
+    if (!currentSubject) {
+      showToast('Sélectionnez d’abord une matière cible', 'error');
+      return;
+    }
+    setBulkImportSummary(null);
+    setValidationErrors([]);
+    playClick();
+    bulkContentFileRef.current?.click();
+  };
+
+  const handleBulkImport = async (event) => {
+    const fileList = Array.from(event.target.files || []);
+    if (!fileList.length) return;
+    if (!currentSubject) {
+      showToast('Aucune matière sélectionnée', 'error');
+      if (bulkContentFileRef.current) bulkContentFileRef.current.value = '';
+      return;
+    }
+
+    setIsBulkImporting(true);
+    setValidationErrors([]);
+    setBulkImportSummary(null);
+
+    const successes = [];
+    const failures = [];
+    let workingSubject = currentSubject;
+    const overwrite = importMode === 'overwrite';
+
+    // Sort files for stable order: parcours → enonce → brouillon → traitement → quiz_mode_*
+    const kindOrder = (kind) => {
+      if (!kind) return 99;
+      if (kind.startsWith('parcours_')) return 0;
+      if (kind.endsWith('_enonce')) return 1;
+      if (kind.endsWith('_brouillon')) return 2;
+      if (kind.endsWith('_traitement')) return 3;
+      if (kind.endsWith('_traitement_question')) return 4;
+      if (kind.startsWith('quiz_mode_')) return 5;
+      return 99;
+    };
+
+    const parsedFiles = [];
+    for (const file of fileList) {
+      try {
+        const text = await file.text();
+        const payload = JSON.parse(text);
+        parsedFiles.push({ file, payload });
+      } catch (err) {
+        failures.push({ name: file.name, reason: `JSON invalide: ${err.message}` });
+      }
+    }
+
+    parsedFiles.sort((a, b) => {
+      const ka = kindOrder(a.payload?.kind);
+      const kb = kindOrder(b.payload?.kind);
+      if (ka !== kb) return ka - kb;
+      const ca = Number(a.payload?.chapterNumber) || 0;
+      const cb = Number(b.payload?.chapterNumber) || 0;
+      return ca - cb;
+    });
+
+    for (const { file, payload } of parsedFiles) {
+      try {
+        const detectedKind = payload && typeof payload.kind === 'string' ? payload.kind : null;
+        if (!detectedKind) throw new Error('Champ kind manquant dans le JSON');
+
+        const validation = validateAdminPayload(payload);
+        if (!validation.valid) {
+          throw new Error(validation.errors[0] || 'JSON non conforme au schéma');
+        }
+
+        const targetChapterNumber = Number(payload.chapterNumber) || 1;
+        const targetChapterTitle = payload.chapterTitle || `Chapitre ${targetChapterNumber}`;
+        const targetItemTitle = payload.title || '';
+
+        const result = applyAdminImportToSubject(workingSubject, payload, {
+          overwrite,
+          targetChapterNumber,
+          targetChapterTitle,
+          targetItemTitle,
+        });
+        workingSubject = result.subject;
+        successes.push({ name: file.name, kind: detectedKind, message: result.message });
+      } catch (err) {
+        failures.push({ name: file.name, reason: err.message });
+      }
+    }
+
+    if (successes.length > 0) {
+      try {
+        await persistSubjectForClass(workingSubject, `${successes.length} fichier(s) importé(s) en masse`);
+        playSpecial('success');
+      } catch (err) {
+        showToast(`Erreur de sauvegarde: ${err.message}`, 'error');
+        playSpecial('error');
+      }
+    } else {
+      playSpecial('error');
+    }
+
+    setBulkImportSummary({
+      total: fileList.length,
+      successes,
+      failures,
+      subjectName: currentSubject?.name || '',
+      mode: overwrite ? 'overwrite' : 'merge',
+    });
+    setIsBulkImporting(false);
+    if (bulkContentFileRef.current) bulkContentFileRef.current.value = '';
+  };
+
   const handleDeleteItem = async (item) => {
     if (!window.confirm(`Supprimer "${item.title}" ?`)) return;
     const nextSubject = deleteAdminItemFromSubject(currentSubject, item, contentType, mentionVariant);
@@ -1473,6 +1720,84 @@ export default function AdminView() {
     }, isCurrentlyBlocked ? `${subject.name} debloquee pour ce profil` : `${subject.name} bloquee pour ce profil`);
   };
 
+  /* ── Classes & élèves : blocage par défaut au niveau classe ── */
+  const handleToggleClassDefaultBlocked = async (className, subject) => {
+    if (!className || !subject?.id) return;
+    const subjectId = String(subject.id);
+    const currentDefaults = data?.classDefaults || {};
+    const currentBlockedList = Array.isArray(currentDefaults?.[className]?.blockedSubjectIds)
+      ? currentDefaults[className].blockedSubjectIds.map((value) => String(value))
+      : [];
+    const isCurrentlyBlocked = currentBlockedList.includes(subjectId);
+    const nextBlockedList = isCurrentlyBlocked
+      ? currentBlockedList.filter((value) => value !== subjectId && value !== `id:${subjectId}`)
+      : [...currentBlockedList, subjectId];
+
+    const nextClassDefaults = {
+      ...currentDefaults,
+      [className]: { ...(currentDefaults?.[className] || {}), blockedSubjectIds: nextBlockedList },
+    };
+
+    const nextData = { ...data, classDefaults: nextClassDefaults };
+    await save(nextData);
+    showToast(
+      isCurrentlyBlocked
+        ? `${subject.name} débloquée par défaut pour ${className}`
+        : `${subject.name} bloquée par défaut pour ${className}`,
+      'success'
+    );
+  };
+
+  /* ── Override individuel : un élève débloque ou re-bloque une matière ── */
+  const handleToggleStudentOverride = async (profileId, subject, kind /* 'unlock' | 'block' */) => {
+    if (!profileId || !subject?.id) return;
+    const subjectId = String(subject.id);
+    const profile = data?.profiles?.[profileId];
+    if (!profile) return;
+
+    const userPatch = { ...(profile.user || {}) };
+    const blocked = new Set((userPatch.blockedSubjectIds || []).map(String));
+    const unlocked = new Set((userPatch.unlockedSubjectIds || []).map(String));
+    blocked.delete(`id:${subjectId}`);
+    unlocked.delete(`id:${subjectId}`);
+
+    if (kind === 'unlock') {
+      // Bascule : si déjà débloqué personnellement, on enlève. Sinon on ajoute (et on retire un blocage personnel s'il y en avait).
+      if (unlocked.has(subjectId)) {
+        unlocked.delete(subjectId);
+      } else {
+        unlocked.add(subjectId);
+        blocked.delete(subjectId);
+      }
+    } else if (kind === 'block') {
+      if (blocked.has(subjectId)) {
+        blocked.delete(subjectId);
+      } else {
+        blocked.add(subjectId);
+        unlocked.delete(subjectId);
+      }
+    }
+
+    const nextProfiles = {
+      ...(data?.profiles || {}),
+      [profileId]: {
+        ...profile,
+        user: {
+          ...(profile.user || {}),
+          blockedSubjectIds: Array.from(blocked),
+          unlockedSubjectIds: Array.from(unlocked),
+        },
+      },
+    };
+
+    const nextData = { ...data, profiles: nextProfiles };
+    // Si on a modifié le profil actif, on recopie son user au top-level pour cohérence runtime.
+    if (String(profileId) === String(data?.activeProfileId)) {
+      nextData.user = nextProfiles[profileId].user;
+    }
+    await save(nextData);
+  };
+
   /* ── Lock screen ── */
   if (!isAdminConnected) {
     return (
@@ -1535,6 +1860,7 @@ export default function AdminView() {
   /* ── Admin panel ── */
   const TABS = [
     { id: 'content', label: 'Contenus', icon: Layers },
+    { id: 'classes', label: 'Classes & élèves', icon: Users },
     { id: 'examples', label: 'Exemples JSON', icon: FileText },
     { id: 'prompts', label: 'Prompt Bank', icon: Brain },
     { id: 'settings', label: 'Paramètres', icon: Settings2 },
@@ -1979,6 +2305,121 @@ export default function AdminView() {
               )}
 
               <input ref={contentFileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+
+              <div className="rounded-2xl border-2 border-dashed border-accent-purple/30 bg-accent-purple/5 p-3 space-y-2">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex-1 min-w-[180px]">
+                    <p className="text-xs font-bold text-accent-purple flex items-center gap-2">
+                      <Upload size={14} /> Import en masse (multi-fichiers)
+                    </p>
+                    <p className="text-[11px] text-txt-sub mt-1">
+                      Sélectionnez plusieurs fichiers JSON d’un coup (ou un dossier entier). Chaque fichier est routé automatiquement d’après son <code className="px-1 rounded bg-white/60">kind</code>, son <code className="px-1 rounded bg-white/60">chapterNumber</code>, <code className="px-1 rounded bg-white/60">chapterTitle</code> et son <code className="px-1 rounded bg-white/60">title</code>. Le mode {importMode === 'overwrite' ? 'Écraser' : 'Fusionner'} courant s’applique à tous. Cible : <strong>{currentSubject?.name || '(aucune matière)'}</strong>.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleStartBulkImport}
+                    disabled={isBulkImporting || !currentSubject}
+                    className="px-4 py-2 rounded-xl bg-accent-purple text-white text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 shadow-card"
+                  >
+                    {isBulkImporting ? (<><RefreshCw size={14} className="inline mr-1 animate-spin" /> Import en cours…</>) : (<><Upload size={14} className="inline mr-1" /> Choisir les fichiers</>)}
+                  </button>
+                </div>
+
+                <div className="rounded-xl bg-white border border-accent-purple/25 p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex-1 min-w-[180px]">
+                      <p className="text-xs font-bold text-accent-purple flex items-center gap-2">
+                        <FileText size={14} /> Importer tous les exemples JSON pour cette matière
+                      </p>
+                      <p className="text-[11px] text-txt-sub mt-1">
+                        Injecte automatiquement tous les packs Français / Anglais déjà préparés dans la banque d’exemples ci-dessous, sans avoir à les télécharger un par un. Le matching se fait sur le nom de la matière courante (<strong>{currentSubject?.name || '—'}</strong>).
+                      </p>
+                      {matchingExamplePacks.length > 0 ? (
+                        <p className="text-[11px] text-accent-green font-semibold mt-1">
+                          {matchingExamplePacks.length} pack(s) détecté(s) · {matchingExampleFilesCount} fichier(s) à importer
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-accent-red font-semibold mt-1">
+                          Aucun pack ne correspond à cette matière. Sélectionne une matière nommée « Français » ou « Anglais ».
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleImportLanguageExamples}
+                      disabled={isBulkImporting || !currentSubject || !matchingExamplePacks.length}
+                      className="px-4 py-2 rounded-xl bg-accent-green text-white text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 shadow-card"
+                    >
+                      {isBulkImporting ? (<><RefreshCw size={14} className="inline mr-1 animate-spin" /> Import…</>) : (<><Upload size={14} className="inline mr-1" /> Tout importer ({matchingExampleFilesCount})</>)}
+                    </button>
+                  </div>
+                  {matchingExamplePacks.length > 0 && (
+                    <details className="text-[11px] text-txt-sub">
+                      <summary className="cursor-pointer font-semibold text-accent-purple">Voir le détail des packs ({matchingExamplePacks.length})</summary>
+                      <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                        {matchingExamplePacks.map((entry) => (
+                          <li key={entry.id} className="break-words">
+                            · <strong>{entry.title || entry.id}</strong> <span className="text-txt-muted">({Array.isArray(entry.files) ? entry.files.length : 0} fichier(s))</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+
+                {bulkImportSummary && (
+                  <div className="rounded-xl bg-white border border-accent-purple/20 p-3 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                      <span className="px-2 py-1 rounded-lg bg-accent-green/10 text-accent-green">✅ {bulkImportSummary.successes.length} importé(s)</span>
+                      {bulkImportSummary.failures.length > 0 && (
+                        <span className="px-2 py-1 rounded-lg bg-accent-red/10 text-accent-red">❌ {bulkImportSummary.failures.length} échec(s)</span>
+                      )}
+                      <span className="px-2 py-1 rounded-lg bg-gray-100 text-txt-sub">Total : {bulkImportSummary.total}</span>
+                      <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary-dark">Mode : {bulkImportSummary.mode === 'overwrite' ? 'Écraser' : 'Fusionner'}</span>
+                      <span className="px-2 py-1 rounded-lg bg-accent-blue/10 text-accent-blue">Matière : {bulkImportSummary.subjectName}</span>
+                      {bulkImportSummary.source && (
+                        <span className="px-2 py-1 rounded-lg bg-accent-purple/10 text-accent-purple">Source : {bulkImportSummary.source}</span>
+                      )}
+                    </div>
+                    {bulkImportSummary.failures.length > 0 && (
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        <p className="text-[11px] font-bold text-accent-red">Détail des échecs :</p>
+                        {bulkImportSummary.failures.map((failure, index) => (
+                          <p key={`${failure.name}-${index}`} className="text-[11px] text-accent-red break-words">
+                            · <strong>{failure.name}</strong> — {failure.reason}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {bulkImportSummary.successes.length > 0 && (
+                      <details className="text-[11px] text-txt-sub">
+                        <summary className="cursor-pointer font-semibold text-accent-green">Voir les {bulkImportSummary.successes.length} fichier(s) importé(s)</summary>
+                        <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                          {bulkImportSummary.successes.map((success, index) => (
+                            <p key={`${success.name}-${index}`} className="break-words">
+                              · <strong>{success.name}</strong> <span className="text-txt-muted">({success.kind})</span>
+                            </p>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                    <button
+                      onClick={() => setBulkImportSummary(null)}
+                      className="text-[11px] font-semibold text-txt-sub hover:text-txt-main"
+                    >
+                      Fermer le résumé
+                    </button>
+                  </div>
+                )}
+
+                <input
+                  ref={bulkContentFileRef}
+                  type="file"
+                  accept=".json,application/json"
+                  multiple
+                  className="hidden"
+                  onChange={handleBulkImport}
+                />
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl p-4 shadow-card space-y-3">
@@ -2099,6 +2540,197 @@ export default function AdminView() {
             </div>
           </>
         )}
+
+        {activeTab === 'classes' && (() => {
+          const classDefaultsMap = data?.classDefaults || {};
+          const blockedForClass = new Set(
+            (classDefaultsMap?.[selectedClass]?.blockedSubjectIds || []).map(String)
+          );
+          // Élèves rattachés à la classe sélectionnée (via user.selectedClass)
+          const studentsInClass = (data?.profileOrder || [])
+            .map((pid) => ({ id: String(pid), profile: data?.profiles?.[pid] }))
+            .filter((entry) => entry.profile)
+            .filter((entry) => normalizeClassName(
+              entry.profile?.user?.selectedClass || entry.profile?.settings?.selectedClass || '',
+              CLASSES[0]
+            ) === selectedClass);
+
+          return (
+            <div className="space-y-4">
+              <div className="bg-accent-blue/5 border border-accent-blue/15 rounded-2xl p-4">
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  <Users size={16} className="text-accent-blue" /> Classes &amp; élèves
+                </h3>
+                <p className="text-[11px] text-txt-sub mt-1">
+                  Pour chaque classe, choisissez les matières <strong>bloquées par défaut</strong>. Les élèves de la classe verront ces matières bloquées,
+                  sauf si vous leur accordez un déblocage personnel ci-dessous. Sur leur écran d&apos;accueil, les matières débloquées apparaissent en haut de la liste.
+                </p>
+              </div>
+
+              {/* Sélection de la classe (réutilise selectedClass déjà piloté par l'onglet Contenus) */}
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <h4 className="text-xs font-bold text-txt-sub mb-2 uppercase tracking-wider">Classe sélectionnée</h4>
+                <div className="flex flex-wrap gap-2">
+                  {adminClasses.map((className) => (
+                    <button
+                      key={className}
+                      onClick={() => { playClick(); setSelectedClass(className); }}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                        selectedClass === className ? 'bg-primary text-white shadow-gold' : 'bg-gray-100 text-txt-sub'
+                      }`}
+                    >
+                      {className}
+                      <span className="ml-1.5 text-[10px] opacity-70">
+                        ({(data?.classDefaults?.[className]?.blockedSubjectIds || []).length} bloquée{(data?.classDefaults?.[className]?.blockedSubjectIds || []).length !== 1 ? 's' : ''})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Blocage par défaut au niveau classe */}
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-bold text-sm flex items-center gap-2">
+                    <Lock size={14} className="text-accent-red" /> Matières bloquées par défaut pour {selectedClass}
+                  </h4>
+                  <span className="text-[11px] text-txt-sub">{blockedForClass.size} / {classSubjects.length}</span>
+                </div>
+                {classSubjects.length === 0 ? (
+                  <p className="text-xs text-txt-sub italic">Aucune matière dans cette classe pour l&apos;instant.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {classSubjects.map((subject) => {
+                      const sid = String(subject.id);
+                      const isBlocked = blockedForClass.has(sid);
+                      return (
+                        <button
+                          key={sid}
+                          onClick={() => handleToggleClassDefaultBlocked(selectedClass, subject)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-colors ${
+                            isBlocked
+                              ? 'bg-accent-red/5 border-accent-red/30'
+                              : 'bg-white border-gray-200 hover:border-primary/30'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isBlocked ? 'bg-accent-red/10' : ''}`}
+                               style={!isBlocked ? { backgroundColor: (subject.color || '#8b5cf6') + '18' } : {}}>
+                            {isBlocked ? <Lock size={14} className="text-accent-red" /> : <Unlock size={14} style={{ color: subject.color || '#8b5cf6' }} />}
+                          </div>
+                          <span className="flex-1 text-sm font-semibold">{subject.name}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isBlocked ? 'bg-accent-red/10 text-accent-red' : 'bg-accent-green/10 text-accent-green'
+                          }`}>
+                            {isBlocked ? 'BLOQUÉE' : 'OUVERTE'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Liste des élèves de la classe + overrides individuels */}
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-bold text-sm flex items-center gap-2">
+                    <Users size={14} className="text-accent-blue" /> Élèves dans {selectedClass}
+                  </h4>
+                  <span className="text-[11px] text-txt-sub">{studentsInClass.length} élève{studentsInClass.length !== 1 ? 's' : ''}</span>
+                </div>
+                {studentsInClass.length === 0 ? (
+                  <p className="text-xs text-txt-sub italic">Aucun élève rattaché à cette classe.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {studentsInClass.map(({ id: pid, profile }) => {
+                      const studentUser = profile.user || {};
+                      const personalBlocked = new Set((studentUser.blockedSubjectIds || []).map(String));
+                      const personalUnlocked = new Set((studentUser.unlockedSubjectIds || []).map(String));
+                      const studentName = studentUser.profileName || profile.id || 'Élève';
+                      const overrideCount = personalBlocked.size + personalUnlocked.size;
+                      return (
+                        <details key={pid} className="rounded-xl border border-gray-100 bg-gray-50">
+                          <summary className="px-3 py-2.5 cursor-pointer flex items-center gap-3 select-none">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                              {(studentName[0] || '?').toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold truncate">{studentName}</p>
+                              <p className="text-[10px] text-txt-muted truncate">
+                                {overrideCount > 0
+                                  ? `${overrideCount} dérogation${overrideCount > 1 ? 's' : ''} personnelle${overrideCount > 1 ? 's' : ''}`
+                                  : 'Aucune dérogation personnelle'}
+                              </p>
+                            </div>
+                            <span className="text-[10px] text-txt-sub">▾</span>
+                          </summary>
+                          <div className="px-3 pb-3 pt-1 space-y-1.5">
+                            {classSubjects.length === 0 && (
+                              <p className="text-[11px] text-txt-sub italic">Aucune matière à configurer.</p>
+                            )}
+                            {classSubjects.map((subject) => {
+                              const sid = String(subject.id);
+                              const access = computeSubjectAccess({
+                                subject,
+                                user: studentUser,
+                                classDefaults: classDefaultsMap,
+                              });
+                              const classDefaultBlocked = blockedForClass.has(sid);
+                              const personallyUnlocked = personalUnlocked.has(sid);
+                              const personallyBlocked = personalBlocked.has(sid);
+                              return (
+                                <div key={sid} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-white border border-gray-100">
+                                  <span className="flex-1 text-xs font-semibold truncate">{subject.name}</span>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                    access.blocked
+                                      ? (access.source === 'personal' ? 'bg-accent-red/15 text-accent-red' : 'bg-orange-100 text-orange-700')
+                                      : (personallyUnlocked ? 'bg-accent-green/15 text-accent-green' : 'bg-gray-100 text-txt-sub')
+                                  }`}>
+                                    {access.blocked
+                                      ? (access.source === 'personal' ? 'BLOC. PERSO' : 'BLOC. CLASSE')
+                                      : (personallyUnlocked ? 'DÉBLOC. PERSO' : 'OUVERTE')}
+                                  </span>
+                                  {/* Bouton débloquer perso : visible si la matière est bloquée par classe */}
+                                  {classDefaultBlocked && (
+                                    <button
+                                      onClick={() => handleToggleStudentOverride(pid, subject, 'unlock')}
+                                      className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                        personallyUnlocked
+                                          ? 'bg-accent-green text-white'
+                                          : 'bg-accent-green/10 text-accent-green hover:bg-accent-green/20'
+                                      }`}
+                                      title={personallyUnlocked ? 'Retirer le déblocage personnel' : 'Débloquer pour cet élève uniquement'}
+                                    >
+                                      {personallyUnlocked ? '✓ Débloquée' : 'Débloquer'}
+                                    </button>
+                                  )}
+                                  {/* Bouton bloquer perso : visible si pas de bloc. classe (sinon redondant) */}
+                                  {!classDefaultBlocked && (
+                                    <button
+                                      onClick={() => handleToggleStudentOverride(pid, subject, 'block')}
+                                      className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                        personallyBlocked
+                                          ? 'bg-accent-red text-white'
+                                          : 'bg-accent-red/10 text-accent-red hover:bg-accent-red/20'
+                                      }`}
+                                      title={personallyBlocked ? 'Retirer le blocage personnel' : 'Bloquer pour cet élève uniquement'}
+                                    >
+                                      {personallyBlocked ? '✓ Bloquée' : 'Bloquer'}
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </details>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {activeTab === 'examples' && (
           <div className="space-y-4">

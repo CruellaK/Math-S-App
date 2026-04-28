@@ -423,7 +423,10 @@ export function getQuizModeQuestions(quiz, mode) {
         return {
           type: 'duel-intrus',
           question: buildQuestionText(question),
-          subtitle: question.subtitle || 'Sélectionnez le bloc sain et rejetez le piège.',
+          // Pas de fallback de subtitle : la bannière Duel de l'Intrus dans QuizView
+          // affiche déjà la consigne structurelle. On n'expose subtitle que si l'auteur
+          // l'a explicitement défini.
+          subtitle: question.subtitle || '',
           options: built.options,
           correct: built.correct,
           answer: built.answer,

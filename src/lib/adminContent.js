@@ -775,6 +775,7 @@ export function validateAdminPayload(payload, expectedKinds = []) {
 function ensureChapter(subject, chapterNumber, chapterTitle, options = {}) {
   const chapters = Array.isArray(subject.chapters) ? [...subject.chapters] : [];
   const matchByNumberOnly = Boolean(options.matchByNumberOnly);
+  const chapterDescription = options.chapterDescription || '';
   let chapterIndex = chapters.findIndex((chapter) => (
     Number(chapter.number) === Number(chapterNumber)
     || (!matchByNumberOnly && normalizeText(chapter.title) === normalizeText(chapterTitle))
@@ -784,6 +785,7 @@ function ensureChapter(subject, chapterNumber, chapterTitle, options = {}) {
     chapters.push({
       number: Number(chapterNumber) || chapters.length + 1,
       title: chapterTitle || `Chapitre ${chapters.length + 1}`,
+      description: chapterDescription || '',
       sections: [],
       quizzes: [],
       sujetTypes: [],
@@ -798,6 +800,7 @@ function ensureChapter(subject, chapterNumber, chapterTitle, options = {}) {
     ...source,
     number: Number(chapterNumber) || source.number || chapterIndex + 1,
     title: chapterTitle || source.title || `Chapitre ${chapterIndex + 1}`,
+    description: chapterDescription || source.description || '',
     sections: [...(source.sections || [])],
     quizzes: [...(source.quizzes || [])],
     sujetTypes: [...(source.sujetTypes || [])],
@@ -913,6 +916,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
   };
   const { chapters, chapterIndex, chapter } = ensureChapter(nextSubject, resolvedChapterNumber, resolvedChapterTitle, {
     matchByNumberOnly: Number(options.targetChapterNumber) > 0,
+    chapterDescription: payload.chapterDescription || '',
   });
 
   if (kind === 'parcours_bien' || kind === 'parcours_tres_bien') {
@@ -937,6 +941,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
       list[index] = {
         ...item,
         title: resolvedTitle,
+        description: payload.description || item.description || '',
         mode: baseMode,
         type: baseType,
         enonce: payload.enonce,
@@ -952,6 +957,7 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
       list[index] = {
         ...item,
         title: resolvedTitle,
+        description: payload.description || item.description || '',
         mode: baseMode,
         type: baseType,
         brouillon: { required: true },
@@ -1009,11 +1015,13 @@ export function applyAdminImportToSubject(subject, payload, options = {}) {
     list[index] = {
       ...item,
       title: resolvedTitle,
+      description: payload.description || item.description || '',
       quiz_metadata: {
         ...(item.quiz_metadata || {}),
         chapter_num: resolvedChapterNumber,
         chapter_title: resolvedChapterTitle,
         quiz_title: resolvedTitle,
+        description: payload.description || item.quiz_metadata?.description || '',
       },
       modeConfigs: {
         suggestion: { ...(item.modeConfigs?.suggestion || {}) },

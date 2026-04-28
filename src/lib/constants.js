@@ -96,6 +96,7 @@ export const DEFAULT_USER = {
   streak: 0,
   stars: 0,
   blockedSubjectIds: [],
+  unlockedSubjectIds: [],
   credits: 30,
   globalScore: 0,
   averageScore: 0,
@@ -202,6 +203,16 @@ export function normalizeClassName(value, fallback = DEFAULT_CLASS_NAMES[0]) {
   return normalized || fallback;
 }
 
+// Class-level defaults : pour chaque classe, on peut bloquer des matières par défaut.
+// Les élèves de cette classe verront ces matières bloquées sauf s'ils ont la matière
+// dans leur user.unlockedSubjectIds (déblocage personnel).
+export function createDefaultClassDefaults(classNames = DEFAULT_CLASS_NAMES) {
+  const safeNames = [...new Set((Array.isArray(classNames) ? classNames : DEFAULT_CLASS_NAMES)
+    .map((className) => normalizeClassName(className, ''))
+    .filter(Boolean))];
+  return Object.fromEntries(safeNames.map((cls) => [cls, { blockedSubjectIds: [] }]));
+}
+
 export function createDefaultClassContent(classNames = DEFAULT_CLASS_NAMES, options = {}) {
   const withDefaultSubjects = Boolean(options.withDefaultSubjects);
   const safeNames = [...new Set((Array.isArray(classNames) ? classNames : DEFAULT_CLASS_NAMES)
@@ -274,6 +285,7 @@ export function createDefaultData() {
     profiles: {
       [defaultProfile.id]: defaultProfile,
     },
+    classDefaults: createDefaultClassDefaults(DEFAULT_CLASS_NAMES),
     user: defaultProfile.user,
     subjects: defaultProfile.subjects,
     classContent: defaultProfile.classContent,
