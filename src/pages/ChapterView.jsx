@@ -53,8 +53,13 @@ function buildExerciseEntries(chapter) {
 }
 
 function getVisibleChapters(subject) {
-  return (subject?.chapters || []).filter((chapter, chapterIndex) => {
-    return buildQuizEntries(chapter, chapterIndex).length > 0
+  return (subject?.chapters || [])
+    .map((chapter, chapterIndex) => ({
+      ...chapter,
+      displayNumber: chapter.number || chapterIndex + 1,
+    }))
+    .filter((chapter) => {
+    return buildQuizEntries(chapter, chapter.displayNumber - 1).length > 0
       || buildSujetTypeEntries(chapter).length > 0
       || buildExerciseEntries(chapter).length > 0;
   });
@@ -300,7 +305,7 @@ export default function ChapterView() {
         ...exercise,
         title: exercise.title || `${chapter.title} — Exercice`,
         chapterTitle: chapter.title,
-        chapterNumber: chapter.number,
+        chapterNumber: chapter.displayNumber || chapter.number,
         scoreScale: exercise.scoreScale || subject.scoreScale || data?.settings?.finalScoreScale || 100,
         subjectCoefficient: Math.max(1, Number(subject.coefficient) || 1),
         timingDefaults: subjectTimingDefaults,
@@ -368,7 +373,7 @@ export default function ChapterView() {
       {
         sessionKind: 'quiz',
         chapterTitle: chapter.title,
-        chapterNumber: chapter.number || chapterIndex + 1,
+        chapterNumber: chapter.displayNumber || chapter.number || chapterIndex + 1,
         quizTitle: quizEntry.quiz_metadata?.quiz_title || quizEntry.title,
         subjectId,
         scoreScale: scoringConfig.scoreScale,
@@ -464,11 +469,11 @@ export default function ChapterView() {
               >
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-bouncy"
                   style={{ backgroundColor: subject.color }}>
-                  {cIdx + 1}
+                  {chapter.displayNumber || chapter.number || cIdx + 1}
                 </div>
                 <div className="flex-1 text-left">
                   <h3 className="font-bold text-sm">{chapter.title}</h3>
-                  <p className="text-[11px] text-txt-sub">Chapitre {chapter.number || cIdx + 1} · {summaryLabel}</p>
+                  <p className="text-[11px] text-txt-sub">Chapitre {chapter.displayNumber || chapter.number || cIdx + 1} · {summaryLabel}</p>
                 </div>
                 <ChevronRight size={18} className={`text-txt-muted transition-transform ${isOpen ? 'rotate-90' : ''}`} />
               </button>

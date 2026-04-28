@@ -2554,6 +2554,10 @@ export default function AdminView() {
               entry.profile?.user?.selectedClass || entry.profile?.settings?.selectedClass || '',
               CLASSES[0]
             ) === selectedClass);
+          const cloudAccountsForClass = knownAccounts.filter((account) => {
+            const selectedClasses = Array.isArray(account.selectedClasses) ? account.selectedClasses : [];
+            return selectedClasses.some((className) => normalizeClassName(className, CLASSES[0]) === selectedClass);
+          });
 
           return (
             <div className="space-y-4">
@@ -2624,6 +2628,83 @@ export default function AdminView() {
                             {isBlocked ? 'BLOQUÉE' : 'OUVERTE'}
                           </span>
                         </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 shadow-card">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-bold text-sm flex items-center gap-2">
+                      <User size={14} className="text-accent-blue" /> Comptes email dans {selectedClass}
+                    </h4>
+                    <p className="text-[11px] text-txt-sub mt-1">Vue regroupée par compte cloud, comme dans Paramètres.</p>
+                  </div>
+                  <span className="text-[11px] text-txt-sub">{cloudAccountsForClass.length} compte{cloudAccountsForClass.length !== 1 ? 's' : ''}</span>
+                </div>
+                {adminStatus?.knownAccountsError ? <p className="text-[11px] font-semibold text-accent-red mb-2">{adminStatus.knownAccountsError}</p> : null}
+                {!cloudAccountsForClass.length ? (
+                  <p className="text-xs text-txt-sub italic">Aucun compte email cloud rattaché à cette classe pour le moment.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {cloudAccountsForClass.map((account) => {
+                      const isExpanded = expandedCloudAccountId === account.remoteUserId;
+                      const detailRows = cloudAccountDetails[account.remoteUserId] || [];
+                      const detailSummaries = detailRows
+                        .map((row) => buildTeacherProfileSummary(row?.payload || {}, row))
+                        .filter((summary) => normalizeClassName(summary.user?.selectedClass || summary.row?.selected_class || '', CLASSES[0]) === selectedClass);
+                      const isLoadingDetails = cloudAccountDetailLoadingId === account.remoteUserId;
+
+                      return (
+                        <div key={`class-account-${account.remoteUserId}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-3 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-extrabold truncate">{account.displayName || 'Compte élève'}</p>
+                              <p className="text-[11px] text-txt-muted truncate">{account.email || account.remoteUserId}</p>
+                              <p className="text-[10px] text-txt-muted mt-1">{account.profileCount} profil(s) · {account.selectedClasses?.join(', ') || 'Classe inconnue'}</p>
+                              <p className="text-[10px] text-txt-muted">Dernière activité : {account.lastUpdatedAt ? new Date(account.lastUpdatedAt).toLocaleString() : 'inconnue'}</p>
+                            </div>
+                            <button
+                              onClick={() => handleToggleCloudAccountDetails(account)}
+                              disabled={adminActionLoading || adminStatus?.busy || !isAdminOwnerSession}
+                              className="px-3 py-2 rounded-xl bg-primary/10 text-primary-dark text-xs font-bold active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                            >
+                              <FileText size={14} className="inline mr-1" /> {isExpanded ? 'Masquer' : 'Voir profils'}
+                            </button>
+                          </div>
+                          {isExpanded ? (
+                            <div className="rounded-2xl bg-white border border-primary/10 p-3 space-y-2">
+                              {cloudAccountDetailError ? <p className="text-[11px] font-semibold text-accent-red">{cloudAccountDetailError}</p> : null}
+                              {isLoadingDetails ? (
+                                <p className="text-[11px] text-txt-sub">Chargement des profils Supabase…</p>
+                              ) : detailSummaries.length === 0 ? (
+                                <p className="text-[11px] text-txt-sub">Aucun profil détaillé de ce compte dans {selectedClass}.</p>
+                              ) : (
+                                detailSummaries.map((summary) => (
+                                  <div key={`class-account-${account.remoteUserId}-${summary.row?.profile_id || summary.user?.profileName || 'profile'}`} className="rounded-xl border border-gray-100 p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-extrabold truncate">{summary.user?.profileName || summary.row?.profile_name || 'Profil élève'}</p>
+                                        <p className="text-[10px] text-txt-muted">Classe : {summary.user?.selectedClass || summary.row?.selected_class || 'Inconnue'} · {summary.mergedHistory.length} session(s)</p>
+                                      </div>
+                                      <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary-dark text-[10px] font-bold">
+                                        {formatAdminScore(summary.user?.averageScore)}/20
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-[10px] text-txt-sub">
+                                      <span>XP : <strong>{summary.user?.xp || 0}</strong></span>
+                                      <span>Crédits : <strong>{summary.user?.credits || 0}</strong></span>
+                                      <span>Vérif. : <strong>{summary.verificationRate}%</strong></span>
+                                      <span>Temps : <strong>{formatAdminDuration(summary.stats?.timeStudiedSeconds || 0)}</strong></span>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          ) : null}
+                        </div>
                       );
                     })}
                   </div>

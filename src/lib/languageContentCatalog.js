@@ -32,6 +32,28 @@ function replaceWholeToken(sentence = '', token = '', replacement = '_____') {
   return next.join(' ');
 }
 
+function replaceAnswerWithBlank(sentence = '', answer = '') {
+  const replaced = replaceWholeToken(sentence, answer, '_____');
+  if (replaced !== sentence && replaced.includes('_____')) return replaced;
+  const source = String(sentence || '');
+  const target = String(answer || '').trim();
+  if (target && source.includes(target)) return source.replace(target, '_____');
+  return `${source} _____`.trim();
+}
+
+function isGenericQuizPrompt(prompt = '') {
+  return /choisissez|rep[eé]rez|forme exacte|bonne r[eé]ponse|r[eé]daction juste|phrase correcte|proposition correcte/i.test(String(prompt || ''));
+}
+
+function buildContextualQuizPrompt(entry) {
+  const correct = String(entry.correct || '');
+  const answer = String(entry.answer || '');
+  const hint = String(entry.hint || '');
+  if (answer && correct) return `Dans « ${replaceAnswerWithBlank(correct, answer)} », quel élément convient compte tenu de la règle : ${hint || 'justifiez le choix avec la méthode du cours'} ?`;
+  if (correct) return `Quelle proposition respecte précisément la méthode attendue dans ce contexte : « ${correct} » ?`;
+  return entry.prompt || 'Analysez le contexte puis sélectionnez la proposition cohérente.';
+}
+
 function findDifferenceIndex(correctBlocks = [], wrongBlocks = [], answerToken = '') {
   for (let index = 0; index < Math.min(correctBlocks.length, wrongBlocks.length); index += 1) {
     if (correctBlocks[index] !== wrongBlocks[index]) return index;
@@ -71,17 +93,19 @@ function createSentenceCase({
 }) {
   const safeWrongs = unique(wrongs).slice(0, 3);
   const safeOptions = unique([answer, ...(blockOptions || [])]).slice(0, 4);
+  const contextualPrompt = isGenericQuizPrompt(prompt) ? buildContextualQuizPrompt({ correct, answer, hint, prompt }) : prompt;
+  const safeDuelTrap = duelTrap || safeOptions.find((option) => option !== answer) || safeWrongs[0] || answer;
   return {
-    prompt,
+    prompt: contextualPrompt,
     correct,
     wrongs: safeWrongs,
     answer,
     blockOptions: safeOptions,
     hint,
     explanation,
-    duelTrap: duelTrap || safeOptions.find((option) => option !== answer) || safeWrongs[0] || answer,
+    duelTrap: safeDuelTrap,
     trapPrompt: trapPrompt || 'Repérez les formulations fautives.',
-    duelPrompt: duelPrompt || 'Choisissez la forme exacte.',
+    duelPrompt: duelPrompt || `Entre « ${answer} » et « ${safeDuelTrap} », lequel complète correctement « ${replaceAnswerWithBlank(correct, answer)} » ?`,
     deminagePrompt: deminagePrompt || 'Réparez la phrase proposée.',
   };
 }
@@ -98,7 +122,7 @@ function buildSuggestionQuestions(cases = []) {
 
 function buildInputQuestions(cases = []) {
   return cases.map((entry) => ({
-    text: replaceWholeToken(entry.correct, entry.answer, '_____'),
+    text: replaceAnswerWithBlank(entry.correct, entry.answer),
     correct_answer: entry.answer,
     acceptedAnswers: unique([entry.answer]),
     blockOptions: entry.blockOptions,
@@ -123,9 +147,7 @@ function buildTrapQuestions(cases = []) {
 
 function buildDuelQuestions(cases = []) {
   return cases.map((entry) => ({
-    // Une seule consigne, la plus spécifique (entry.prompt). On évite la double consigne
-    // (text + subtitle) qui faisait apparaître deux fois "Choisissez la forme exacte..."
-    text: entry.prompt || entry.duelPrompt,
+    text: entry.duelPrompt || entry.prompt,
     options: [
       { text: entry.answer, is_trap: false },
       { text: entry.duelTrap, is_trap: true },
@@ -486,11 +508,25 @@ function buildExerciseFiles(chapter, exercise, subjectCoefficient = 1) {
   ];
 }
 
+function buildSujetTypeFiles(chapter, exercise, subjectCoefficient = 1) {
+  return buildExerciseFiles(chapter, exercise, subjectCoefficient).map((file) => ({
+    ...file,
+    filename: file.filename
+      .replace('_enonce.json', '_sujet_type_enonce.json')
+      .replace('_brouillon.json', '_sujet_type_brouillon.json')
+      .replace('_traitement.json', '_sujet_type_traitement.json'),
+    payload: {
+      ...file.payload,
+      kind: file.payload.kind.replace('exercice_', 'sujet_type_'),
+    },
+  }));
+}
+
 function buildQuizPackEntries(chapters, subjectCoefficient) {
   return chapters.map((chapter) => ({
     id: `${slugify(chapter.subject)}-quiz-pack-${chapter.number}`,
     title: `${chapter.subject} · ${chapter.title} · Quiz 5 modes`,
-    description: `5 items nommés, 25 fichiers JSON, 25 questions par mode dans ce chapitre.`,
+    description: `${chapter.quizItems.length} items nommés, 5 modes complets et questions contextualisées dans ce chapitre.`,
     files: chapter.quizItems.flatMap((item) => buildQuizFilesForItem(chapter, item, subjectCoefficient)),
   }));
 }
@@ -499,8 +535,17 @@ function buildExercisePackEntries(chapters, subjectCoefficient) {
   return chapters.map((chapter) => ({
     id: `${slugify(chapter.subject)}-exercise-pack-${chapter.number}`,
     title: `${chapter.subject} · ${chapter.title} · Exercices longs`,
-    description: `2 exercices longs, questions multiples, brouillon obligatoire et traitements à rafraîchissements successifs.`,
+    description: `${chapter.exercises.length} exercices longs, questions multiples, brouillon obligatoire et traitements à rafraîchissements successifs.`,
     files: chapter.exercises.flatMap((exercise) => buildExerciseFiles(chapter, exercise, subjectCoefficient)),
+  }));
+}
+
+function buildSujetTypePackEntries(chapters, subjectCoefficient) {
+  return chapters.filter((chapter) => chapter.sujetTypes?.length).map((chapter) => ({
+    id: `${slugify(chapter.subject)}-sujet-type-pack-${chapter.number}`,
+    title: `${chapter.subject} · ${chapter.title} · Sujets types longs`,
+    description: `${chapter.sujetTypes.length} sujet(s) type(s) long(s), enoncé développé, brouillon méthodique et traitement très guidé.`,
+    files: chapter.sujetTypes.flatMap((exercise) => buildSujetTypeFiles(chapter, exercise, subjectCoefficient)),
   }));
 }
 
@@ -5244,11 +5289,410 @@ const ENGLISH_CHAPTERS = attachExercises(ENGLISH_QUIZ_CHAPTERS, [
   ...buildEnglishAdvancedExercises(),
 ]);
 
+function mq(prompt, correct, wrongs, answer, blockOptions, hint, explanation) {
+  return createSentenceCase({
+    prompt,
+    correct,
+    wrongs,
+    answer,
+    blockOptions,
+    hint,
+    explanation,
+    duelPrompt: `Entre « ${answer} » et « ${blockOptions.find((option) => option !== answer) || wrongs[0]} », quel bloc rend l’énoncé mathématique exact dans « ${replaceAnswerWithBlank(correct, answer)} » ?`,
+    trapPrompt: `Parmi ces écritures proches, repérez celles qui contredisent la méthode : ${hint}`,
+    deminagePrompt: `Corrigez l’écriture mathématique en respectant la méthode : ${hint}`,
+  });
+}
+
+const MATH_QUIZ_CHAPTERS = [
+  {
+    subject: 'Mathématiques',
+    number: 1,
+    title: 'Fonction logarithme népérien',
+    description: 'Domaine de définition, limites usuelles, dérivées et propriétés algébriques du logarithme népérien.',
+    quizItems: [
+      {
+        title: 'Domaines de définition avec logarithme',
+        description: 'Identifier les conditions A(x)>0, résoudre les inégalités et conclure avec un intervalle.',
+        cases: [
+          mq('Pour f(x)=ln(x-4), déterminez la condition exacte sur x.', 'x-4>0 donc x>4 et D_f=]4,+∞[.', ['x-4≥0 donc D_f=[4,+∞[.', 'x-4<0 donc D_f=]-∞,4[.', 'x-4≠0 donc D_f=R\\{4}.'], 'x>4', ['x>4', 'x≥4', 'x<4', 'x≠4'], 'L’argument d’un logarithme doit être strictement positif.', 'On impose x-4>0, donc x>4.'),
+          mq('Pour f(x)=ln(3-x), isolez correctement x.', '3-x>0 donc x<3 et D_f=]-∞,3[.', ['3-x≥0 donc D_f=]-∞,3].', '3-x>0 donc x>3.', '3-x≠0 donc D_f=R\\{3}.'], 'x<3', ['x<3', 'x≤3', 'x>3', 'x≠3'], 'Quand on multiplie par -1, le sens de l’inégalité change.', '3-x>0 équivaut à -x>-3 donc x<3.'),
+          mq('Pour f(x)=ln(x-1)-ln(5-x), combinez les deux conditions.', 'x-1>0 et 5-x>0 donc D_f=]1,5[.', ['x-1>0 ou 5-x>0 donc D_f=R.', 'x-1≥0 et 5-x≥0 donc D_f=[1,5].', 'x-1≠0 et 5-x≠0 donc D_f=R\\{1,5}.'], ']1,5[', [']1,5[', '[1,5]', 'R\\{1,5}', ']-∞,1['], 'Chaque logarithme impose une condition stricte.', 'Il faut x>1 et x<5 simultanément.'),
+          mq('Pour f(x)=ln((x-2)/(x-6)), choisissez l’intervalle issu du tableau de signes.', '(x-2)/(x-6)>0 donc D_f=]-∞,2[∪]6,+∞[.', ['(x-2)/(x-6)>0 donc D_f=]2,6[.', '(x-2)/(x-6)≥0 donc D_f=]-∞,2]∪[6,+∞[.', 'x≠2 et x≠6 donc D_f=R\\{2,6}.'], ']-∞,2[∪]6,+∞[', [']-∞,2[∪]6,+∞[', ']2,6[', 'R\\{2,6}', ']-∞,2]'], 'Un quotient est positif quand numérateur et dénominateur ont le même signe.', 'Les bornes 2 et 6 sont exclues car l’argument doit être strictement positif.'),
+          mq('Pour f(x)=2xln(x+3), gardez seulement la condition due au logarithme.', 'x+3>0 donc D_f=]-3,+∞[.', ['2x>0 donc D_f=]0,+∞[.', 'x+3≥0 donc D_f=[-3,+∞[.', 'x≠-3 donc D_f=R\\{-3}.'], ']-3,+∞[', [']-3,+∞[', '[-3,+∞[', ']0,+∞[', 'R\\{-3}'], 'Le facteur 2x n’impose aucune restriction de domaine.', 'Seul ln(x+3) exige x+3>0.'),
+        ],
+      },
+      {
+        title: 'Limites classiques du logarithme',
+        description: 'Utiliser les limites usuelles du cours pour conclure rapidement et correctement.',
+        cases: [
+          mq('Évaluez la limite classique en 0 à droite.', 'lim_{x→0+} ln x = -∞.', ['lim_{x→0+} ln x = +∞.', 'lim_{x→0+} ln x = 0.', 'lim_{x→0+} ln x = 1.'], '-∞', ['-∞', '+∞', '0', '1'], 'La courbe de ln x descend sans borne près de 0+.', 'C’est une limite usuelle fondamentale.'),
+          mq('Évaluez la limite classique à l’infini.', 'lim_{x→+∞} ln x = +∞.', ['lim_{x→+∞} ln x = 0.', 'lim_{x→+∞} ln x = -∞.', 'lim_{x→+∞} ln x = 1.'], '+∞', ['+∞', '0', '-∞', '1'], 'Le logarithme croît indéfiniment, même lentement.', 'La limite à +∞ de ln x vaut +∞.'),
+          mq('Comparez ln x à une puissance de x.', 'lim_{x→+∞} (ln x)/x² = 0.', ['lim_{x→+∞} (ln x)/x² = +∞.', 'lim_{x→+∞} (ln x)/x² = 1.', 'lim_{x→+∞} (ln x)/x² = -∞.'], '0', ['0', '+∞', '1', '-∞'], 'Toute puissance positive de x domine ln x à l’infini.', 'Le quotient tend donc vers 0.'),
+          mq('Utilisez la limite usuelle autour de 1.', 'lim_{x→1} (ln x)/(x-1) = 1.', ['lim_{x→1} (ln x)/(x-1) = 0.', 'lim_{x→1} (ln x)/(x-1) = +∞.', 'lim_{x→1} (ln x)/(x-1) = -1.'], '1', ['1', '0', '+∞', '-1'], 'C’est le taux d’accroissement de ln en 1.', 'La dérivée de ln en 1 vaut 1.'),
+          mq('Utilisez l’équivalent de ln(1+x) près de 0.', 'lim_{x→0} ln(1+x)/x = 1.', ['lim_{x→0} ln(1+x)/x = 0.', 'lim_{x→0} ln(1+x)/x = +∞.', 'lim_{x→0} ln(1+x)/x = -1.'], '1', ['1', '0', '+∞', '-1'], 'ln(1+x) est équivalent à x près de 0.', 'Le quotient tend vers 1.'),
+        ],
+      },
+      {
+        title: 'Dérivées et propriétés de ln',
+        description: 'Appliquer u’/u, les propriétés ln(ab), ln(a/b), ln(a^n) et les simplifications attendues.',
+        cases: [
+          mq('Dérivez f(x)=ln(2x-5).', 'f’(x)=2/(2x-5).', ['f’(x)=1/(2x-5).', 'f’(x)=ln(2).', 'f’(x)=(2x-5)/2.'], '2/(2x-5)', ['2/(2x-5)', '1/(2x-5)', 'ln(2)', '(2x-5)/2'], 'La dérivée de ln(u) est u’/u.', 'Ici u=2x-5 et u’=2.'),
+          mq('Dérivez f(x)=ln(4-x).', 'f’(x)=-1/(4-x).', ['f’(x)=1/(4-x).', 'f’(x)=ln(-1).', 'f’(x)=4-x.'], '-1/(4-x)', ['-1/(4-x)', '1/(4-x)', 'ln(-1)', '4-x'], 'Le numérateur est u’, pas seulement 1.', 'u=4-x donc u’=-1.'),
+          mq('Simplifiez ln(a×b) avec a,b>0.', 'ln(a×b)=ln a+ln b.', ['ln(a×b)=ln a×ln b.', 'ln(a×b)=ln a-ln b.', 'ln(a×b)=a+b.'], 'ln a+ln b', ['ln a+ln b', 'ln a×ln b', 'ln a-ln b', 'a+b'], 'Le produit devient une somme de logarithmes.', 'C’est une propriété directe du logarithme.'),
+          mq('Simplifiez ln(a/b) avec a,b>0.', 'ln(a/b)=ln a-ln b.', ['ln(a/b)=ln a+ln b.', 'ln(a/b)=ln a/ln b.', 'ln(a/b)=a-b.'], 'ln a-ln b', ['ln a-ln b', 'ln a+ln b', 'ln a/ln b', 'a-b'], 'Le quotient devient une différence.', 'On soustrait le logarithme du dénominateur.'),
+          mq('Simplifiez ln(e^x).', 'ln(e^x)=x.', ['ln(e^x)=e^x.', 'ln(e^x)=ln x.', 'ln(e^x)=1/x.'], 'x', ['x', 'e^x', 'ln x', '1/x'], 'ln et exponentielle sont réciproques.', 'Pour tout réel x, ln(e^x)=x.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Mathématiques',
+    number: 2,
+    title: 'Analyse, TVI et fonction réciproque',
+    description: 'Continuité, unicité par monotonie, bijection, fonction réciproque et symétrie par rapport à y=x.',
+    quizItems: [
+      {
+        title: 'Théorème des valeurs intermédiaires',
+        description: 'Vérifier le changement de signe puis conclure sur l’existence d’une solution.',
+        cases: [
+          mq('Pour appliquer le TVI sur [1,2], vérifiez la condition de signe.', 'f(1)×f(2)<0 garantit au moins une solution dans ]1,2[.', ['f(1)×f(2)>0 garantit une solution.', 'f(1)=f(2) garantit l’unicité.', 'f(1)+f(2)<0 suffit toujours.'], 'f(1)×f(2)<0', ['f(1)×f(2)<0', 'f(1)×f(2)>0', 'f(1)=f(2)', 'f(1)+f(2)<0'], 'Le changement de signe est l’indice essentiel.', 'Si la fonction est continue et change de signe, elle s’annule entre les deux bornes.'),
+          mq('Ajoutez la condition qui donne l’unicité.', 'La stricte monotonie sur l’intervalle assure l’unicité de α.', ['La positivité assure l’unicité.', 'La parité assure l’unicité.', 'La périodicité assure l’unicité.'], 'stricte monotonie', ['stricte monotonie', 'positivité', 'parité', 'périodicité'], 'Une fonction strictement monotone coupe une valeur donnée au plus une fois.', 'TVI donne existence ; monotonie stricte donne unicité.'),
+          mq('Pour g(1,2)<0 et g(1,4)>0, choisissez la conclusion correcte.', 'Il existe α∈]1,2;1,4[ tel que g(α)=0.', ['Il existe α∈]0;1,2[ tel que g(α)=0.', 'g ne s’annule pas.', 'α vaut obligatoirement 1,3.'], 'α∈]1,2;1,4[', ['α∈]1,2;1,4[', 'α∈]0;1,2[', 'aucune solution', 'α=1,3'], 'La solution est localisée entre les deux valeurs testées.', 'Le changement de signe encadre une racine.'),
+          mq('Dans une rédaction TVI, indiquez d’abord la propriété de f.', 'f est continue sur [a,b].', ['f est quelconque sur [a,b].', 'f est discontinue sur [a,b].', 'f est définie seulement en a.'], 'continue', ['continue', 'quelconque', 'discontinue', 'définie seulement en a'], 'Le TVI exige la continuité sur l’intervalle fermé.', 'Sans continuité, le passage par 0 n’est pas garanti.'),
+          mq('Pour conclure proprement après TVI et monotonie, donnez la formulation finale.', 'L’équation f(x)=0 admet une unique solution α dans l’intervalle.', ['La fonction vaut toujours 0.', 'Toutes les valeurs sont solutions.', 'La solution est hors de l’intervalle.'], 'unique solution α', ['unique solution α', 'toutes les valeurs', 'aucune solution', 'solution hors intervalle'], 'La conclusion doit mentionner existence et unicité.', 'On nomme souvent la solution α.'),
+        ],
+      },
+      {
+        title: 'Bijection et réciproque',
+        description: 'Reconnaître les conditions de bijection et les propriétés de la réciproque.',
+        cases: [
+          mq('Pour montrer qu’une fonction est bijective de I vers J, choisissez la propriété suffisante du cours.', 'f est continue et strictement monotone sur I.', ['f est seulement positive sur I.', 'f est seulement paire sur I.', 'f est définie en un point.'], 'continue et strictement monotone', ['continue et strictement monotone', 'positive', 'paire', 'définie en un point'], 'Le cours associe continuité et stricte monotonie.', 'Cela permet d’obtenir une bijection de I vers f(I).'),
+          mq('Si f:I→J est bijective, indiquez le sens de la réciproque.', 'f^{-1}:J→I.', ['f^{-1}:I→J.', 'f^{-1}:R→R toujours.', 'f^{-1}:I→I.'], 'J→I', ['J→I', 'I→J', 'R→R', 'I→I'], 'La réciproque inverse les ensembles de départ et d’arrivée.', 'Si y=f(x), alors f^{-1}(y)=x.'),
+          mq('Indiquez l’axe de symétrie entre les courbes de f et f^{-1}.', 'Les courbes sont symétriques par rapport à y=x.', ['Les courbes sont symétriques par rapport à x=0.', 'Les courbes sont symétriques par rapport à y=0.', 'Les courbes sont parallèles.'], 'y=x', ['y=x', 'x=0', 'y=0', 'parallèles'], 'La première bissectrice échange abscisse et ordonnée.', 'C’est l’axe de symétrie des fonctions réciproques.'),
+          mq('Pour exp et ln, identifiez la réciproque correcte.', 'La réciproque de exp(x) est ln(x).', ['La réciproque de exp(x) est x².', 'La réciproque de exp(x) est 1/x.', 'La réciproque de exp(x) est sin(x).'], 'ln(x)', ['ln(x)', 'x²', '1/x', 'sin(x)'], 'ln et exp annulent leurs effets respectifs.', 'ln(exp(x))=x et exp(ln(x))=x pour x>0.'),
+          mq('Pour la dérivée d’une réciproque, choisissez la formule utile.', '(f^{-1})’(y0)=1/f’(x0) avec y0=f(x0).', ['(f^{-1})’(y0)=f’(x0).', '(f^{-1})’(y0)=0.', '(f^{-1})’(y0)=f(x0).'], '1/f’(x0)', ['1/f’(x0)', 'f’(x0)', '0', 'f(x0)'], 'La pente de la réciproque est l’inverse de la pente initiale.', 'La formule exige f’(x0) non nul.'),
+        ],
+      },
+      {
+        title: 'Lecture graphique de la réciproque',
+        description: 'Interpréter les points et la symétrie sur un repère.',
+        cases: [
+          mq('Si A(2,5) appartient à Cf, donnez le point correspondant sur Cf^{-1}.', 'A’(5,2) appartient à Cf^{-1}.', ['A’(2,5) appartient à Cf^{-1}.', 'A’(-2,-5) appartient à Cf^{-1}.', 'A’(5,5) appartient à Cf^{-1}.'], '(5,2)', ['(5,2)', '(2,5)', '(-2,-5)', '(5,5)'], 'On échange les coordonnées.', 'La symétrie par rapport à y=x transforme (a,b) en (b,a).'),
+          mq('Si f(3)=7, traduisez avec la réciproque.', 'f^{-1}(7)=3.', ['f^{-1}(3)=7.', 'f^{-1}(7)=10.', 'f^{-1}(3)=3.'], 'f^{-1}(7)=3', ['f^{-1}(7)=3', 'f^{-1}(3)=7', 'f^{-1}(7)=10', 'f^{-1}(3)=3'], 'La réciproque renvoie l’antécédent.', 'Comme 7 est l’image de 3, 3 est l’image de 7 par f^{-1}.'),
+          mq('Pour construire Cf^{-1}, choisissez l’opération géométrique.', 'On réfléchit Cf par rapport à la droite y=x.', ['On translate Cf vers le haut.', 'On multiplie les ordonnées par 2.', 'On efface les abscisses négatives.'], 'réfléchit', ['réfléchit', 'translate', 'multiplie', 'efface'], 'La réciproque correspond à une symétrie.', 'La droite y=x est le miroir.'),
+          mq('Si f est croissante et bijective, indiquez le sens de variation de f^{-1}.', 'f^{-1} est croissante sur J.', ['f^{-1} est décroissante sur J.', 'f^{-1} est constante.', 'f^{-1} n’a pas de variation.'], 'croissante', ['croissante', 'décroissante', 'constante', 'sans variation'], 'La réciproque conserve le sens de variation.', 'Une bijection croissante a une réciproque croissante.'),
+          mq('Pour vérifier graphiquement une réciproque, choisissez le test cohérent.', 'Les points correspondants doivent être symétriques par rapport à y=x.', ['Les points doivent avoir même abscisse.', 'Les courbes doivent être horizontales.', 'Les ordonnées doivent être toutes positives.'], 'symétriques par rapport à y=x', ['symétriques par rapport à y=x', 'même abscisse', 'horizontales', 'ordonnées positives'], 'La symétrie est le critère géométrique.', 'On vérifie l’échange des coordonnées.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Mathématiques',
+    number: 3,
+    title: 'Primitives et intégrales',
+    description: 'Primitives usuelles, intégrales définies, changement de primitive et intégration par parties.',
+    quizItems: [
+      {
+        title: 'Primitives usuelles',
+        description: 'Associer une fonction à une primitive correcte.',
+        cases: [
+          mq('Donnez une primitive de f(x)=x².', 'F(x)=x³/3.', ['F(x)=2x.', 'F(x)=3x².', 'F(x)=x²/2.'], 'x³/3', ['x³/3', '2x', '3x²', 'x²/2'], 'On augmente l’exposant de 1 puis on divise par le nouvel exposant.', 'Une primitive de x² est x³/3.'),
+          mq('Donnez une primitive de f(x)=1/x sur ]0,+∞[.', 'F(x)=ln x.', ['F(x)=x²/2.', 'F(x)=1/x².', 'F(x)=e^x.'], 'ln x', ['ln x', 'x²/2', '1/x²', 'e^x'], 'La dérivée de ln x est 1/x.', 'Sur un intervalle positif, une primitive de 1/x est ln x.'),
+          mq('Donnez une primitive de f(x)=cos x.', 'F(x)=sin x.', ['F(x)=-sin x.', 'F(x)=-cos x.', 'F(x)=tan x.'], 'sin x', ['sin x', '-sin x', '-cos x', 'tan x'], 'La dérivée de sin x est cos x.', 'Donc sin x convient.'),
+          mq('Donnez une primitive de f(x)=sin x.', 'F(x)=-cos x.', ['F(x)=cos x.', 'F(x)=sin x.', 'F(x)=1/cos x.'], '-cos x', ['-cos x', 'cos x', 'sin x', '1/cos x'], 'La dérivée de cos x vaut -sin x.', 'La dérivée de -cos x vaut sin x.'),
+          mq('Pour f(x)=u’(x)e^{u(x)}, choisissez la primitive.', 'F(x)=e^{u(x)}.', ['F(x)=u(x)e^x.', 'F(x)=ln|u(x)|.', 'F(x)=u’(x)e^x.'], 'e^{u(x)}', ['e^{u(x)}', 'u(x)e^x', 'ln|u(x)|', 'u’(x)e^x'], 'La dérivée de e^u est u’e^u.', 'On reconnaît directement la forme composée.'),
+        ],
+      },
+      {
+        title: 'Intégrales définies',
+        description: 'Calculer une intégrale avec une primitive et respecter les bornes.',
+        cases: [
+          mq('Pour I=∫_a^b f(x)dx et F primitive de f, choisissez la formule.', 'I=F(b)-F(a).', ['I=F(a)-F(b).', 'I=F(a)+F(b).', 'I=f(b)-f(a).'], 'F(b)-F(a)', ['F(b)-F(a)', 'F(a)-F(b)', 'F(a)+F(b)', 'f(b)-f(a)'], 'On évalue la primitive à la borne haute puis à la borne basse.', 'C’est la formule fondamentale.'),
+          mq('Calculez ∫_0^1 2x dx.', '∫_0^1 2x dx = [x²]_0^1 = 1.', ['∫_0^1 2x dx = 0.', '∫_0^1 2x dx = 2.', '∫_0^1 2x dx = -1.'], '1', ['1', '0', '2', '-1'], 'Une primitive de 2x est x².', '1²-0²=1.'),
+          mq('Calculez ∫_1^3 x² dx.', '∫_1^3 x² dx = [x³/3]_1^3 = 26/3.', ['∫_1^3 x² dx = 8.', '∫_1^3 x² dx = 9.', '∫_1^3 x² dx = 27/3.'], '26/3', ['26/3', '8', '9', '27/3'], 'Évaluez x³/3 en 3 puis en 1.', '27/3-1/3=26/3.'),
+          mq('Calculez ∫_1^e 1/x dx.', '∫_1^e 1/x dx = [ln x]_1^e = 1.', ['∫_1^e 1/x dx = e.', '∫_1^e 1/x dx = 0.', '∫_1^e 1/x dx = -1.'], '1', ['1', 'e', '0', '-1'], 'ln e=1 et ln 1=0.', 'La différence vaut 1.'),
+          mq('Dans un calcul d’aire, précisez l’unité finale.', 'L’intégrale positive donne une aire en unités d’aire.', ['L’intégrale donne toujours des degrés.', 'L’intégrale donne une probabilité uniquement.', 'L’intégrale n’a jamais d’unité.'], 'unités d’aire', ['unités d’aire', 'degrés', 'probabilité uniquement', 'aucune unité'], 'Le document note u.a. pour unité d’aire.', 'Une aire se conclut en unités d’aire.'),
+        ],
+      },
+      {
+        title: 'Intégration par parties',
+        description: 'Choisir u, v, u’ et v’ pour appliquer la formule d’IPP.',
+        cases: [
+          mq('Choisissez la formule d’intégration par parties utilisée dans le cours.', '∫u’v=[uv]-∫uv’.', ['∫u’v=∫uv’.', '∫u’v=[u’v’]-∫uv.', '∫u’v=u+v.'], '∫u’v=[uv]-∫uv’', ['∫u’v=[uv]-∫uv’', '∫u’v=∫uv’', '∫u’v=u+v', '[u’v’]-∫uv'], 'Elle vient de la dérivée du produit uv.', 'On réarrange (uv)’=u’v+uv’.'),
+          mq('Pour ∫x²lnx dx, choisissez le couple du document.', 'u’=x² et v=lnx.', ['u’=lnx et v=x².', 'u’=x et v=x.', 'u’=1/x et v=x².'], 'u’=x² et v=lnx', ['u’=x² et v=lnx', 'u’=lnx et v=x²', 'u’=x et v=x', 'u’=1/x et v=x²'], 'On primitive x² facilement et on dérive ln x facilement.', 'Cela donne u=x³/3 et v’=1/x.'),
+          mq('Si u’=x², choisissez u.', 'u=x³/3.', ['u=2x.', 'u=x²/2.', 'u=3x².'], 'x³/3', ['x³/3', '2x', 'x²/2', '3x²'], 'Il faut prendre une primitive de x².', 'La primitive est x³/3.'),
+          mq('Si v=lnx, choisissez v’.', 'v’=1/x.', ['v’=x.', 'v’=lnx/x.', 'v’=e^x.'], '1/x', ['1/x', 'x', 'lnx/x', 'e^x'], 'La dérivée du logarithme est 1/x.', 'C’est ce qui simplifie le produit.'),
+          mq('Dans une IPP définie, indiquez ce qu’il faut faire avec [uv].', 'On évalue [uv] entre la borne basse et la borne haute.', ['On supprime toujours [uv].', 'On remplace [uv] par 0.', 'On inverse les bornes sans calcul.'], 'évalue [uv]', ['évalue [uv]', 'supprime [uv]', 'remplace par 0', 'inverse les bornes'], 'Le crochet représente une évaluation aux bornes.', 'Il faut calculer uv(b)-uv(a).'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Mathématiques',
+    number: 4,
+    title: 'Probabilités, Bernoulli et loi binomiale',
+    description: 'Univers, événements, combinaisons, arrangements, variable aléatoire, espérance, variance et loi binomiale.',
+    quizItems: [
+      {
+        title: 'Univers et événements',
+        description: 'Employer le vocabulaire probabiliste et les opérations sur événements.',
+        cases: [
+          mq('Pour un lancer de dé équilibré, donnez l’univers.', 'Ω={1,2,3,4,5,6}.', ['Ω={0,1,2,3,4,5}.', 'Ω={pile,face}.', 'Ω={1,2,3}.'], 'Ω={1,2,3,4,5,6}', ['Ω={1,2,3,4,5,6}', 'Ω={0,1,2,3,4,5}', 'Ω={pile,face}', 'Ω={1,2,3}'], 'L’univers contient toutes les issues possibles.', 'Un dé cubique numéroté de 1 à 6 a six issues.'),
+          mq('Identifiez la notation de l’intersection.', 'A∩B signifie A et B réalisés en même temps.', ['A∪B signifie A et B réalisés en même temps.', 'A∩B signifie ni A ni B.', 'A∩B signifie A seulement.'], 'A∩B', ['A∩B', 'A∪B', 'A seulement', 'ni A ni B'], 'Intersection signifie simultanéité.', 'A∩B regroupe les issues communes à A et B.'),
+          mq('En équiprobabilité, choisissez la formule de P(A).', 'P(A)=Card(A)/Card(Ω).', ['P(A)=Card(Ω)/Card(A).', 'P(A)=Card(A)+Card(Ω).', 'P(A)=Card(A)-Card(Ω).'], 'Card(A)/Card(Ω)', ['Card(A)/Card(Ω)', 'Card(Ω)/Card(A)', 'Card(A)+Card(Ω)', 'Card(A)-Card(Ω)'], 'On divise les cas favorables par les cas possibles.', 'C’est la formule d’équiprobabilité.'),
+          mq('Pour deux tirages simultanés, choisissez l’outil de dénombrement.', 'On utilise les combinaisons C_n^p.', ['On utilise les arrangements avec répétition.', 'On utilise seulement n+p.', 'On utilise une dérivée.'], 'combinaisons C_n^p', ['combinaisons C_n^p', 'arrangements avec répétition', 'n+p', 'dérivée'], 'L’ordre ne compte pas dans un tirage simultané.', 'Les combinaisons conviennent.'),
+          mq('Pour des tirages successifs avec remise, choisissez l’outil de dénombrement.', 'On utilise les arrangements avec répétition n^p.', ['On utilise seulement les combinaisons.', 'On utilise p/n.', 'On utilise une intégrale.'], 'arrangements avec répétition n^p', ['arrangements avec répétition n^p', 'combinaisons seules', 'p/n', 'intégrale'], 'L’ordre compte et on remet à chaque fois.', 'Chaque tirage conserve le même nombre de possibilités.'),
+        ],
+      },
+      {
+        title: 'Variable aléatoire et paramètres',
+        description: 'Construire une loi de probabilité et calculer les paramètres usuels.',
+        cases: [
+          mq('Pour une variable aléatoire discrète X, choisissez la notation de la loi.', 'La loi donne les valeurs x_i et les probabilités P(X=x_i).', ['La loi donne seulement E(X).', 'La loi donne seulement Ω.', 'La loi donne seulement σ.'], 'P(X=x_i)', ['P(X=x_i)', 'E(X) seulement', 'Ω seulement', 'σ seulement'], 'Une loi associe chaque valeur à sa probabilité.', 'On présente souvent un tableau.'),
+          mq('Choisissez la formule de l’espérance.', 'E(X)=Σ x_i P(X=x_i).', ['E(X)=Σ P(X=x_i).', 'E(X)=Σ x_i.', 'E(X)=V(X)².'], 'Σ x_i P(X=x_i)', ['Σ x_i P(X=x_i)', 'Σ P(X=x_i)', 'Σ x_i', 'V(X)²'], 'L’espérance est une moyenne pondérée.', 'Chaque valeur est multipliée par sa probabilité.'),
+          mq('Choisissez la formule pratique de la variance.', 'V(X)=E(X²)-[E(X)]².', ['V(X)=E(X)-E(X²).', 'V(X)=E(X)+1.', 'V(X)=σ(X).'], 'E(X²)-[E(X)]²', ['E(X²)-[E(X)]²', 'E(X)-E(X²)', 'E(X)+1', 'σ(X)'], 'La variance utilise le second moment.', 'On retire le carré de l’espérance.'),
+          mq('Reliez écart-type et variance.', 'σ(X)=√V(X).', ['σ(X)=V(X)².', 'σ(X)=V(X)+1.', 'σ(X)=E(X).'], '√V(X)', ['√V(X)', 'V(X)²', 'V(X)+1', 'E(X)'], 'L’écart-type est la racine carrée de la variance.', 'Il retrouve l’unité de X.'),
+          mq('Pour une fonction de répartition F, choisissez la définition.', 'F(x)=P(X≤x).', ['F(x)=P(X=x) uniquement.', 'F(x)=P(X>x).', 'F(x)=E(X).'], 'P(X≤x)', ['P(X≤x)', 'P(X=x)', 'P(X>x)', 'E(X)'], 'La fonction de répartition cumule les probabilités.', 'Elle donne la probabilité d’être inférieur ou égal à x.'),
+        ],
+      },
+      {
+        title: 'Bernoulli et loi binomiale',
+        description: 'Reconnaître une épreuve de Bernoulli et appliquer la loi binomiale.',
+        cases: [
+          mq('Définissez une épreuve de Bernoulli.', 'Une épreuve de Bernoulli possède deux issues : succès ou échec.', ['Elle possède toujours trois issues.', 'Elle impose une infinité d’issues.', 'Elle interdit les probabilités.'], 'succès ou échec', ['succès ou échec', 'trois issues', 'infinité d’issues', 'sans probabilités'], 'Bernoulli signifie deux issues possibles.', 'On note souvent la probabilité du succès p.'),
+          mq('Si on répète n épreuves indépendantes de Bernoulli de paramètre p, donnez la loi.', 'X suit une loi binomiale B(n,p).', ['X suit toujours une loi uniforme.', 'X suit une loi géométrique sans condition.', 'X suit une loi normale exacte.'], 'B(n,p)', ['B(n,p)', 'uniforme', 'géométrique', 'normale exacte'], 'La binomiale compte le nombre de succès.', 'Elle modélise n répétitions indépendantes.'),
+          mq('Choisissez la formule de P(X=k) pour X~B(n,p).', 'P(X=k)=C_n^k p^k(1-p)^{n-k}.', ['P(X=k)=p+n+k.', 'P(X=k)=C_n^k p^{n-k}.', 'P(X=k)=k/n.'], 'C_n^k p^k(1-p)^{n-k}', ['C_n^k p^k(1-p)^{n-k}', 'p+n+k', 'C_n^k p^{n-k}', 'k/n'], 'On choisit les places des succès puis on multiplie les probabilités.', 'C_n^k compte les positions des k succès.'),
+          mq('Pour X~B(n,p), choisissez l’espérance.', 'E(X)=np.', ['E(X)=n+p.', 'E(X)=p/n.', 'E(X)=n(1-p).'], 'np', ['np', 'n+p', 'p/n', 'n(1-p)'], 'L’espérance binomiale est nombre d’essais × probabilité de succès.', 'C’est une formule directe du cours.'),
+          mq('Pour X~B(n,p), choisissez la variance.', 'V(X)=np(1-p).', ['V(X)=np.', 'V(X)=n+p.', 'V(X)=p(1-p)/n.'], 'np(1-p)', ['np(1-p)', 'np', 'n+p', 'p(1-p)/n'], 'La variance binomiale ajoute le facteur q=1-p.', 'On écrit aussi npq.'),
+        ],
+      },
+    ],
+  },
+  {
+    subject: 'Mathématiques',
+    number: 5,
+    title: 'Exponentielle, suites et nombres complexes',
+    description: 'Fonction exponentielle, suites arithmétiques et géométriques, équations complexes et géométrie dans le plan complexe.',
+    quizItems: [
+      {
+        title: 'Fonction exponentielle',
+        description: 'Étudier le domaine, les limites, la dérivée et les propriétés de exp.',
+        cases: [
+          mq('Donnez le domaine de définition de e^x.', 'La fonction e^x est définie sur R.', ['La fonction e^x est définie seulement sur R+*.', 'La fonction e^x est définie sur ]0,+∞[.', 'La fonction e^x est définie sauf en 0.'], 'R', ['R', 'R+*', ']0,+∞[', 'R\\{0}'], 'L’exponentielle accepte tout réel.', 'Son domaine est R.'),
+          mq('Donnez la dérivée de e^x.', '(e^x)’=e^x.', ['(e^x)’=lnx.', '(e^x)’=1/x.', '(e^x)’=xe^{x-1}.'], 'e^x', ['e^x', 'lnx', '1/x', 'xe^{x-1}'], 'L’exponentielle est sa propre dérivée.', 'C’est une propriété fondamentale.'),
+          mq('Donnez la limite de e^x quand x tend vers +∞.', 'lim_{x→+∞} e^x=+∞.', ['lim_{x→+∞} e^x=0.', 'lim_{x→+∞} e^x=-∞.', 'lim_{x→+∞} e^x=1.'], '+∞', ['+∞', '0', '-∞', '1'], 'L’exponentielle croît très vite.', 'Elle diverge vers +∞.'),
+          mq('Donnez la limite de e^x quand x tend vers -∞.', 'lim_{x→-∞} e^x=0.', ['lim_{x→-∞} e^x=+∞.', 'lim_{x→-∞} e^x=-∞.', 'lim_{x→-∞} e^x=1.'], '0', ['0', '+∞', '-∞', '1'], 'La courbe admet l’axe des abscisses comme asymptote à gauche.', 'La limite vaut 0.'),
+          mq('Simplifiez e^{a+b}.', 'e^{a+b}=e^a×e^b.', ['e^{a+b}=e^a+e^b.', 'e^{a+b}=e^{ab}.', 'e^{a+b}=a+b.'], 'e^a×e^b', ['e^a×e^b', 'e^a+e^b', 'e^{ab}', 'a+b'], 'Une somme dans l’exposant devient un produit.', 'C’est la propriété multiplicative de l’exponentielle.'),
+        ],
+      },
+      {
+        title: 'Suites numériques',
+        description: 'Distinguer suites arithmétiques, géométriques, récurrence et limites.',
+        cases: [
+          mq('Reconnaissez la forme d’une suite arithmétique.', 'u_{n+1}=u_n+r.', ['u_{n+1}=u_n×q.', 'u_{n+1}=q/u_n.', 'u_{n+1}=u_n^2.'], 'u_{n+1}=u_n+r', ['u_{n+1}=u_n+r', 'u_{n+1}=u_n×q', 'q/u_n', 'u_n^2'], 'Une suite arithmétique ajoute une raison constante.', 'La différence u_{n+1}-u_n vaut r.'),
+          mq('Reconnaissez la forme d’une suite géométrique.', 'u_{n+1}=q u_n.', ['u_{n+1}=u_n+r.', 'u_{n+1}=u_n-q.', 'u_{n+1}=u_n+1.'], 'q u_n', ['q u_n', 'u_n+r', 'u_n-q', 'u_n+1'], 'Une suite géométrique multiplie par une raison constante.', 'Le quotient u_{n+1}/u_n vaut q si u_n≠0.'),
+          mq('Donnez la formule explicite d’une suite arithmétique.', 'u_n=u_0+nr.', ['u_n=u_0q^n.', 'u_n=u_0+nq.', 'u_n=r^n.'], 'u_0+nr', ['u_0+nr', 'u_0q^n', 'u_0+nq', 'r^n'], 'On ajoute r à chaque rang.', 'À partir de u_0, après n pas, on ajoute nr.'),
+          mq('Donnez la formule explicite d’une suite géométrique.', 'u_n=u_0q^n.', ['u_n=u_0+nr.', 'u_n=u_0+nq.', 'u_n=q+n.'], 'u_0q^n', ['u_0q^n', 'u_0+nr', 'u_0+nq', 'q+n'], 'On multiplie par q à chaque rang.', 'Après n pas, le facteur est q^n.'),
+          mq('Pour montrer qu’une suite est constante, choisissez le critère.', 'On montre que u_{n+1}-u_n=0 pour tout n.', ['On montre que u_{n+1}-u_n=1.', 'On montre que u_n>0 seulement.', 'On montre que u_n est définie.'], 'u_{n+1}-u_n=0', ['u_{n+1}-u_n=0', 'u_{n+1}-u_n=1', 'u_n>0', 'u_n définie'], 'Une suite constante ne varie pas.', 'La différence de deux termes consécutifs est nulle.'),
+        ],
+      },
+      {
+        title: 'Nombres complexes',
+        description: 'Utiliser parties réelle et imaginaire, factorisation, affixes et similitude directe.',
+        cases: [
+          mq('Pour qu’un nombre complexe a+ib soit nul, choisissez la condition.', 'a=0 et b=0.', ['a=0 ou b=0.', 'a=b.', 'a+b=1.'], 'a=0 et b=0', ['a=0 et b=0', 'a=0 ou b=0', 'a=b', 'a+b=1'], 'Partie réelle et partie imaginaire doivent s’annuler.', 'C’est utilisé dans l’identification du document.'),
+          mq('Identifiez la partie réelle de 4-3i.', 'La partie réelle est 4.', ['La partie réelle est -3.', 'La partie réelle est i.', 'La partie réelle est 1.'], '4', ['4', '-3', 'i', '1'], 'La partie réelle est le coefficient sans i.', 'Dans 4-3i, elle vaut 4.'),
+          mq('Identifiez la partie imaginaire de 4-3i.', 'La partie imaginaire est -3.', ['La partie imaginaire est 4.', 'La partie imaginaire est -3i.', 'La partie imaginaire est i.'], '-3', ['-3', '4', '-3i', 'i'], 'La partie imaginaire est le coefficient de i.', 'On ne garde pas le symbole i dans Im(z).'),
+          mq('Si z_A=2+i, donnez les coordonnées du point A.', 'A(2,1).', ['A(1,2).', 'A(2,-1).', 'A(-2,1).'], '(2,1)', ['(2,1)', '(1,2)', '(2,-1)', '(-2,1)'], 'L’affixe x+iy correspond au point (x,y).', 'La partie réelle donne l’abscisse et la partie imaginaire l’ordonnée.'),
+          mq('Pour factoriser un polynôme complexe ayant 2i pour racine, choisissez le facteur.', 'Le facteur associé est (z-2i).', ['Le facteur associé est (z+2i).', 'Le facteur associé est (z-2).', 'Le facteur associé est (z+i).'], 'z-2i', ['z-2i', 'z+2i', 'z-2', 'z+i'], 'Si α est racine, z-α est facteur.', 'Avec α=2i, le facteur est z-2i.'),
+        ],
+      },
+    ],
+  },
+];
+
+function createMathQuestion(question, steps, answers, distractors, hint, explanation) {
+  return {
+    question,
+    steps,
+    hint,
+    explanation,
+    refreshes: answers.map((entry, index) => ({
+      stepIndex: Math.min(index, steps.length - 1),
+      instruction: entry.instruction,
+      answer: entry.answer,
+      distractors,
+      hint,
+      explanation,
+    })),
+  };
+}
+
+function buildMathExerciseFromChapter(chapter, itemIndex, variant = 'exercice') {
+  const baseTitle = variant === 'sujet-type' ? `Sujet type Bac — ${chapter.title}` : `Exercice long ${itemIndex + 1} — ${chapter.title}`;
+  const longIntro = `On travaille dans le chapitre « ${chapter.title} ». L’objectif est de suivre exactement la méthode du professeur : identifier le domaine ou le cadre de validité, écrire les conditions utiles, effectuer les calculs ligne par ligne, puis conclure avec une phrase mathématique complète. Les réponses attendues sont volontairement longues : chaque question doit être traitée par plusieurs rafraîchissements successifs, comme dans un brouillon de bac.`;
+  const supportText = `Document de référence : ${chapter.description} Les méthodes à respecter sont celles du cours Math.txt : conditions strictes pour ln, tableau de signes si nécessaire, TVI avec continuité puis changement de signe, primitive évaluée aux bornes, dénombrement par combinaisons ou arrangements selon la situation, et séparation des parties réelle et imaginaire pour les complexes.`;
+  const instructions = `Traiter toutes les questions. Pour chacune, rédiger le brouillon avant le traitement : annonce de la méthode, calcul intermédiaire, justification, conclusion. Ne pas donner seulement un résultat numérique : toute réponse doit montrer pourquoi la méthode est légitime.`;
+  const commonDistractors = ['condition large', 'borne incluse', 'signe inversé', 'résultat sans justification', 'méthode incomplète', 'conclusion absente', 'égalité non valable'];
+  const questionSets = {
+    1: [
+      createMathQuestion('Déterminer le domaine de définition de f(x)=ln(x-2)+ln(7-x).', ['Imposer chaque argument strictement positif', 'Résoudre les deux inégalités', 'Intersecter les conditions puis conclure'], [
+        { instruction: 'Écrire les deux conditions issues des logarithmes.', answer: 'x-2>0 et 7-x>0' },
+        { instruction: 'Résoudre séparément les deux inégalités.', answer: 'x>2 et x<7' },
+        { instruction: 'Conclure par l’intervalle du domaine.', answer: 'D_f=]2,7[' },
+        { instruction: 'Justifier l’exclusion des bornes.', answer: 'les arguments de ln doivent être strictement positifs' },
+      ], commonDistractors, 'Chaque logarithme impose un argument strictement positif.', 'Le domaine est l’intersection des deux conditions : ]2,7[.'),
+      createMathQuestion('Étudier le signe de (x-1)/(x-5) pour définir ln((x-1)/(x-5)).', ['Repérer les valeurs interdites', 'Construire le signe du quotient', 'Garder uniquement les intervalles positifs'], [
+        { instruction: 'Nommer les valeurs critiques du quotient.', answer: '1 et 5' },
+        { instruction: 'Indiquer les intervalles où le quotient est positif.', answer: ']-∞,1[ et ]5,+∞[' },
+        { instruction: 'Écrire le domaine du logarithme.', answer: 'D_f=]-∞,1[∪]5,+∞[' },
+        { instruction: 'Expliquer pourquoi 1 et 5 sont exclus.', answer: 'le quotient ne doit être ni nul ni non défini' },
+      ], commonDistractors, 'Un quotient est positif quand les deux facteurs ont le même signe.', 'Le logarithme exige un quotient strictement positif.'),
+      createMathQuestion('Dériver f(x)=ln(3x-4)-ln(x+1).', ['Identifier les deux fonctions composées', 'Appliquer u’/u à chaque logarithme', 'Soustraire les dérivées correctement'], [
+        { instruction: 'Dériver le premier logarithme.', answer: '3/(3x-4)' },
+        { instruction: 'Dériver le second logarithme.', answer: '1/(x+1)' },
+        { instruction: 'Assembler la dérivée de f.', answer: 'f’(x)=3/(3x-4)-1/(x+1)' },
+        { instruction: 'Rappeler la règle utilisée.', answer: 'la dérivée de ln(u) est u’/u' },
+      ], commonDistractors, 'Ne pas oublier le numérateur u’.', 'La dérivée finale est une différence de deux quotients.'),
+      createMathQuestion('Calculer la limite de ln(x)/x quand x tend vers +∞.', ['Identifier la croissance comparée', 'Comparer ln(x) à x', 'Conclure sur le quotient'], [
+        { instruction: 'Nommer la limite usuelle mobilisée.', answer: 'ln(x)/x tend vers 0' },
+        { instruction: 'Interpréter la comparaison de croissances.', answer: 'x domine ln(x) à l’infini' },
+        { instruction: 'Écrire la conclusion.', answer: 'lim_{x→+∞} ln(x)/x=0' },
+      ], commonDistractors, 'Toute puissance positive de x domine ln(x).', 'Le quotient tend vers 0.'),
+    ],
+    2: [
+      createMathQuestion('Montrer que g(x)=x²-2+ln(x) admet une solution dans ]1,2;1,4[.', ['Vérifier la continuité', 'Calculer les signes aux bornes', 'Appliquer le TVI'], [
+        { instruction: 'Indiquer la continuité sur l’intervalle.', answer: 'g est continue sur [1,2;1,4]' },
+        { instruction: 'Donner le signe en 1,2.', answer: 'g(1,2)<0' },
+        { instruction: 'Donner le signe en 1,4.', answer: 'g(1,4)>0' },
+        { instruction: 'Conclure par le TVI.', answer: 'il existe α∈]1,2;1,4[ tel que g(α)=0' },
+      ], commonDistractors, 'Le changement de signe permet l’existence.', 'La continuité et les signes opposés donnent une racine.'),
+      createMathQuestion('Justifier l’unicité de la solution précédente.', ['Calculer ou étudier la dérivée', 'Montrer la stricte monotonie', 'Associer TVI et monotonie'], [
+        { instruction: 'Exprimer la dérivée.', answer: 'g’(x)=2x+1/x' },
+        { instruction: 'Donner son signe sur l’intervalle positif.', answer: 'g’(x)>0' },
+        { instruction: 'Conclure sur les variations.', answer: 'g est strictement croissante' },
+        { instruction: 'Conclure sur l’unicité.', answer: 'la solution α est unique' },
+      ], commonDistractors, 'Une fonction strictement monotone ne coupe pas deux fois le même niveau.', 'La dérivée positive assure l’unicité.'),
+      createMathQuestion('Construire la réciproque d’une fonction bijective graphiquement.', ['Identifier la courbe initiale', 'Appliquer la symétrie', 'Traduire les points'], [
+        { instruction: 'Nommer l’axe de symétrie.', answer: 'la droite y=x' },
+        { instruction: 'Transformer un point (a,b).', answer: '(a,b) devient (b,a)' },
+        { instruction: 'Écrire le sens de la réciproque.', answer: 'f^{-1}:J→I' },
+      ], commonDistractors, 'La réciproque échange image et antécédent.', 'Graphiquement, on réfléchit la courbe par rapport à y=x.'),
+      createMathQuestion('Calculer la dérivée d’une réciproque en y0=f(x0).', ['Repérer x0 et y0', 'Vérifier que f’(x0) est non nul', 'Appliquer la formule'], [
+        { instruction: 'Écrire la relation entre y0 et x0.', answer: 'y0=f(x0)' },
+        { instruction: 'Énoncer la formule.', answer: '(f^{-1})’(y0)=1/f’(x0)' },
+        { instruction: 'Préciser la condition.', answer: 'f’(x0)≠0' },
+      ], commonDistractors, 'La pente de la réciproque est l’inverse de la pente.', 'On applique directement la formule du cours.'),
+    ],
+    3: [
+      createMathQuestion('Calculer I=∫_0^1 2x(x²+1)^3 dx.', ['Reconnaître la forme u’u^n', 'Trouver une primitive', 'Évaluer aux bornes'], [
+        { instruction: 'Poser la fonction intérieure.', answer: 'u=x²+1 et u’=2x' },
+        { instruction: 'Écrire une primitive.', answer: 'F(x)=(x²+1)^4/4' },
+        { instruction: 'Évaluer entre 0 et 1.', answer: 'I=16/4-1/4' },
+        { instruction: 'Conclure.', answer: 'I=15/4' },
+      ], commonDistractors, 'La présence de 2x est la dérivée de x²+1.', 'La primitive composée permet le calcul direct.'),
+      createMathQuestion('Calculer par IPP I=∫_1^3 x²ln(x) dx.', ['Choisir u’ et v', 'Appliquer la formule d’IPP', 'Calculer l’intégrale restante'], [
+        { instruction: 'Choisir les fonctions comme dans le cours.', answer: 'u’=x² et v=ln(x)' },
+        { instruction: 'Donner u et v’.', answer: 'u=x³/3 et v’=1/x' },
+        { instruction: 'Écrire la formule appliquée.', answer: 'I=[x³ln(x)/3]_1^3-∫_1^3 x²/3 dx' },
+        { instruction: 'Conclure après évaluation.', answer: 'I=9ln(3)-26/9' },
+      ], commonDistractors, 'On primitive x² et on dérive ln(x).', 'L’IPP transforme l’intégrale en une intégrale de polynôme.'),
+      createMathQuestion('Trouver une primitive de f(x)=3(3x-2)^4.', ['Identifier u et u’', 'Adapter le coefficient', 'Écrire la primitive'], [
+        { instruction: 'Poser la fonction intérieure.', answer: 'u=3x-2 et u’=3' },
+        { instruction: 'Reconnaître la forme.', answer: '3(3x-2)^4=u’u^4' },
+        { instruction: 'Donner une primitive.', answer: 'F(x)=(3x-2)^5/5' },
+      ], commonDistractors, 'La dérivée de 3x-2 est déjà présente.', 'On applique ∫u’u^n=u^{n+1}/(n+1).'),
+      createMathQuestion('Interpréter une intégrale positive comme une aire.', ['Vérifier la positivité', 'Calculer l’intégrale', 'Conclure avec l’unité'], [
+        { instruction: 'Indiquer la condition graphique.', answer: 'la fonction est positive sur [a,b]' },
+        { instruction: 'Écrire le calcul d’aire.', answer: 'A=∫_a^b f(x)dx' },
+        { instruction: 'Donner l’unité finale.', answer: 'unités d’aire' },
+      ], commonDistractors, 'Une aire ne se conclut pas sans unité.', 'Si la fonction est positive, l’intégrale représente l’aire sous la courbe.'),
+    ],
+    4: [
+      createMathQuestion('Résoudre un exercice d’urne avec tirage simultané de 2 boules.', ['Construire l’univers', 'Utiliser les combinaisons', 'Calculer les cas favorables'], [
+        { instruction: 'Donner le cardinal de l’univers pour 8 boules prises 2 à 2.', answer: 'Card Ω=C_8^2=28' },
+        { instruction: 'Indiquer l’outil utilisé.', answer: 'tirage simultané donc combinaisons' },
+        { instruction: 'Écrire la probabilité d’un événement A.', answer: 'P(A)=Card(A)/28' },
+      ], commonDistractors, 'Dans un tirage simultané, l’ordre ne compte pas.', 'On utilise les combinaisons.'),
+      createMathQuestion('Construire la loi d’une variable X comptant le nombre de succès.', ['Définir les valeurs possibles', 'Calculer chaque probabilité', 'Présenter un tableau'], [
+        { instruction: 'Écrire l’univers image.', answer: 'X(Ω)={0,1,2,3}' },
+        { instruction: 'Nommer les probabilités à calculer.', answer: 'P(X=0), P(X=1), P(X=2), P(X=3)' },
+        { instruction: 'Rédiger la conclusion.', answer: 'la loi de X est donnée par le tableau des valeurs et probabilités' },
+      ], commonDistractors, 'Une loi donne toutes les valeurs possibles et leurs probabilités.', 'Le tableau est la présentation attendue.'),
+      createMathQuestion('Calculer E(X), V(X) et σ(X) à partir d’une loi.', ['Appliquer l’espérance', 'Calculer le second moment', 'Déduire variance et écart-type'], [
+        { instruction: 'Écrire la formule de l’espérance.', answer: 'E(X)=Σx_iP(X=x_i)' },
+        { instruction: 'Écrire la formule de la variance.', answer: 'V(X)=E(X²)-[E(X)]²' },
+        { instruction: 'Écrire la formule de l’écart-type.', answer: 'σ(X)=√V(X)' },
+      ], commonDistractors, 'Les paramètres se calculent à partir de toute la loi.', 'L’écart-type est la racine de la variance.'),
+      createMathQuestion('Identifier une loi binomiale dans une répétition indépendante.', ['Reconnaître Bernoulli', 'Vérifier indépendance et répétition', 'Donner les paramètres'], [
+        { instruction: 'Nommer l’épreuve de base.', answer: 'épreuve de Bernoulli' },
+        { instruction: 'Écrire la loi suivie.', answer: 'X suit B(n,p)' },
+        { instruction: 'Donner la probabilité générale.', answer: 'P(X=k)=C_n^k p^k(1-p)^{n-k}' },
+      ], commonDistractors, 'La loi binomiale compte les succès.', 'Il faut n répétitions indépendantes de même probabilité p.'),
+    ],
+    5: [
+      createMathQuestion('Étudier une fonction exponentielle f(x)=e^x-x.', ['Déterminer le domaine', 'Calculer la dérivée', 'Étudier le signe et conclure'], [
+        { instruction: 'Donner le domaine.', answer: 'D_f=R' },
+        { instruction: 'Calculer la dérivée.', answer: 'f’(x)=e^x-1' },
+        { instruction: 'Résoudre le signe de la dérivée.', answer: 'f’(x)=0 pour x=0' },
+        { instruction: 'Conclure sur les variations.', answer: 'f décroît sur ]-∞,0] puis croît sur [0,+∞[' },
+      ], commonDistractors, 'e^x est définie sur R et sa dérivée est elle-même.', 'Le signe de e^x-1 change en 0.'),
+      createMathQuestion('Étudier une suite arithmétique de premier terme u0=3 et raison 5.', ['Identifier le type', 'Écrire la récurrence', 'Écrire la formule explicite'], [
+        { instruction: 'Écrire la relation de récurrence.', answer: 'u_{n+1}=u_n+5' },
+        { instruction: 'Écrire la formule explicite.', answer: 'u_n=3+5n' },
+        { instruction: 'Calculer u_10.', answer: 'u_10=53' },
+      ], commonDistractors, 'Une suite arithmétique ajoute la raison.', 'La formule est u_n=u_0+nr.'),
+      createMathQuestion('Résoudre une équation complexe en séparant réel et imaginaire.', ['Remplacer dans l’expression', 'Regrouper réel et imaginaire', 'Annuler les deux parties'], [
+        { instruction: 'Écrire la condition d’annulation.', answer: 'partie réelle=0 et partie imaginaire=0' },
+        { instruction: 'Résoudre le système obtenu.', answer: 'les deux équations doivent donner la même valeur' },
+        { instruction: 'Conclure.', answer: 'le nombre complexe est nul seulement si les deux parties sont nulles' },
+      ], commonDistractors, 'Un complexe nul impose deux conditions simultanées.', 'On sépare toujours les termes avec i et sans i.'),
+      createMathQuestion('Interpréter les affixes A=2+i, B=2i et C=3+3i dans le plan.', ['Lire réel et imaginaire', 'Placer les points', 'Utiliser les coordonnées'], [
+        { instruction: 'Donner les coordonnées de A.', answer: 'A(2,1)' },
+        { instruction: 'Donner les coordonnées de B.', answer: 'B(0,2)' },
+        { instruction: 'Donner les coordonnées de C.', answer: 'C(3,3)' },
+      ], commonDistractors, 'L’affixe x+iy donne le point (x,y).', 'La partie réelle est l’abscisse.'),
+    ],
+  };
+  return {
+    title: baseTitle,
+    introduction: longIntro,
+    supportText,
+    instructions,
+    timeLimitSeconds: variant === 'sujet-type' ? 14400 : 10800,
+    initialScore: variant === 'sujet-type' ? 40 : 28,
+    questions: questionSets[chapter.number] || questionSets[1],
+  };
+}
+
+function buildMathExercises() {
+  return MATH_QUIZ_CHAPTERS.flatMap((chapter) => ([
+    { chapterNumber: chapter.number, ...buildMathExerciseFromChapter(chapter, 0, 'exercice') },
+    { chapterNumber: chapter.number, ...buildMathExerciseFromChapter(chapter, 1, 'exercice'), title: `Exercice méthode approfondie — ${chapter.title}` },
+  ]));
+}
+
+function buildMathSujetTypes() {
+  return MATH_QUIZ_CHAPTERS.map((chapter) => ({
+    chapterNumber: chapter.number,
+    ...buildMathExerciseFromChapter(chapter, 0, 'sujet-type'),
+  }));
+}
+
+const MATH_CHAPTERS = attachExercises(MATH_QUIZ_CHAPTERS, buildMathExercises()).map((chapter) => ({
+  ...chapter,
+  sujetTypes: buildMathSujetTypes().filter((item) => item.chapterNumber === chapter.number),
+}));
+
 const MASSIVE_DOWNLOADABLE_EXAMPLES = [
   ...buildQuizPackEntries(FRENCH_CHAPTERS, 2),
   ...buildExercisePackEntries(FRENCH_CHAPTERS, 2),
   ...buildQuizPackEntries(ENGLISH_CHAPTERS, 2),
   ...buildExercisePackEntries(ENGLISH_CHAPTERS, 2),
+  ...buildQuizPackEntries(MATH_CHAPTERS, 4),
+  ...buildExercisePackEntries(MATH_CHAPTERS, 4),
+  ...buildSujetTypePackEntries(MATH_CHAPTERS, 4),
 ];
 
 function firstPayloadByKind(entries, matcher) {
@@ -5266,6 +5710,13 @@ const firstFrenchExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
 const firstEnglishSuggestion = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_suggestion' && payload.chapterTitle === 'Foundations and everyday grammar');
 const firstEnglishExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
   .find((entry) => entry.id === 'anglais-exercise-pack-1')
+  ?.files || [];
+const firstMathSuggestion = firstPayloadByKind(MASSIVE_DOWNLOADABLE_EXAMPLES, (payload) => payload.kind === 'quiz_mode_suggestion' && payload.chapterTitle === 'Fonction logarithme népérien');
+const firstMathExerciseFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
+  .find((entry) => entry.id === 'mathematiques-exercise-pack-1')
+  ?.files || [];
+const firstMathSujetTypeFiles = MASSIVE_DOWNLOADABLE_EXAMPLES
+  .find((entry) => entry.id === 'mathematiques-sujet-type-pack-1')
   ?.files || [];
 
 export const MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES = [
@@ -5295,6 +5746,27 @@ export const MASSIVE_LANGUAGE_EXAMPLE_IMPORT_FILES = [
     category: 'Terminale massif',
     label: `Anglais Terminale · ${file.label}`,
     description: 'Extrait d un exercice long Terminale en Anglais.',
+    payload: file.payload,
+  })),
+  firstMathSuggestion ? {
+    id: 'math_terminale_quiz_massif_suggestion',
+    category: 'Terminale massif',
+    label: 'Mathématiques Terminale · Quiz suggestion',
+    description: 'Extrait d un pack massif de quiz Terminale en Mathématiques.',
+    payload: firstMathSuggestion,
+  } : null,
+  ...firstMathExerciseFiles.map((file, index) => ({
+    id: `math_terminale_exercice_long_${index + 1}`,
+    category: 'Terminale massif',
+    label: `Mathématiques Terminale · ${file.label}`,
+    description: 'Extrait d un exercice long Terminale en Mathématiques.',
+    payload: file.payload,
+  })),
+  ...firstMathSujetTypeFiles.map((file, index) => ({
+    id: `math_terminale_sujet_type_long_${index + 1}`,
+    category: 'Terminale massif',
+    label: `Mathématiques Terminale · ${file.label}`,
+    description: 'Extrait d un sujet type long Terminale en Mathématiques.',
     payload: file.payload,
   })),
 ].filter(Boolean);
